@@ -1,0 +1,82 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "olympus-translator"
+version = "1.2.0"
+description = "Desktop text & voice translator with AI enhancement"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+    "PyQt6>=6.6.0,<7",
+    "keyboard>=0.13.5",
+    "six>=1.16.0",
+    "pynput>=1.7.6",
+    "pyperclip>=1.8.2",
+    "deep-translator>=1.11.4,<2",
+    "SpeechRecognition>=3.10.0",
+    "requests>=2.31.0,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-mock>=3.10.0",
+    "ruff>=0.4.0",
+    "mypy>=1.8.0",
+    "pre-commit>=3.6.0",
+]
+
+# ---------------------------------------------------------------------------
+# Ruff — linter + formatter
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "A",   # flake8-builtins
+    "C4",  # flake8-comprehensions
+    "SIM", # flake8-simplify
+    "LOG", # flake8-logging
+]
+ignore = [
+    "E501",  # line length — handled by formatter
+    "N802",  # function name should be lowercase (Qt slots use camelCase)
+    "N803",  # argument name should be lowercase (Qt callbacks)
+    "N806",  # variable in function should be lowercase
+    "UP007", # use X | Y for union — keep compat with older stubs
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "N", "ANN"]
+
+[tool.ruff.format]
+quote-style = "single"
+
+# ---------------------------------------------------------------------------
+# Mypy — type checker
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.10"
+strict = false
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_return_any = false
+no_implicit_optional = true
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
