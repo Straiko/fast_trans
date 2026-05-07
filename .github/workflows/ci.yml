@@ -44,7 +44,8 @@ jobs:
             libxcb-xinerama0 \
             libxcb-xfixes0 \
             libegl1 \
-            libgl1
+            libgl1 \
+            xvfb
 
       - name: Install PyAudio (Windows)
         if: runner.os == 'Windows'
@@ -59,8 +60,12 @@ jobs:
       - name: Run tests
         env:
           QT_QPA_PLATFORM: offscreen
-          DISPLAY: ":99"
-        run: python -m pytest tests/ -v --tb=short
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            xvfb-run --auto-servernum python -m pytest tests/ -v --tb=short
+          else
+            python -m pytest tests/ -v --tb=short
+          fi
 
   # -------------------------------------------------------------------------
   # Lint with Ruff (fast — no system deps needed)

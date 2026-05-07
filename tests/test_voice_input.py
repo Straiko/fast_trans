@@ -132,6 +132,10 @@ class TestRecordAudioSimple:
 
     @patch('voice_input.sr')
     def test_timeout_error(self, mock_sr, default_config, translator):
+        import speech_recognition as sr
+
+        mock_sr.WaitTimeoutError = sr.WaitTimeoutError
+
         vi = VoiceInput(default_config, translator)
 
         mock_source = MagicMock()
@@ -139,7 +143,7 @@ class TestRecordAudioSimple:
         mock_sr.Microphone.return_value.__exit__ = MagicMock(return_value=False)
 
         vi.recognizer = MagicMock()
-        vi.recognizer.listen.side_effect = mock_sr.WaitTimeoutError()
+        vi.recognizer.listen.side_effect = sr.WaitTimeoutError()
 
         vi._record_audio_simple()
 
@@ -147,6 +151,10 @@ class TestRecordAudioSimple:
 
     @patch('voice_input.sr')
     def test_unknown_value_error(self, mock_sr, default_config, translator):
+        import speech_recognition as sr
+
+        mock_sr.UnknownValueError = sr.UnknownValueError
+
         vi = VoiceInput(default_config, translator)
 
         mock_source = MagicMock()
@@ -154,7 +162,7 @@ class TestRecordAudioSimple:
         mock_sr.Microphone.return_value.__exit__ = MagicMock(return_value=False)
 
         vi.recognizer = MagicMock()
-        vi.recognizer.listen.side_effect = mock_sr.UnknownValueError()
+        vi.recognizer.listen.side_effect = sr.UnknownValueError()
 
         vi._record_audio_simple()
 
