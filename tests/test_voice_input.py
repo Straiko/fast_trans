@@ -107,6 +107,10 @@ class TestRecordAudioSimple:
     def test_recognize_with_source_lang(
         self, mock_sr, mock_clip, mock_send, default_config, translator
     ):
+        import speech_recognition as sr
+
+        mock_sr.WaitTimeoutError = sr.WaitTimeoutError
+        mock_sr.UnknownValueError = sr.UnknownValueError
         default_config['source_lang'] = 'de'
         vi = VoiceInput(default_config, translator)
 
@@ -135,6 +139,7 @@ class TestRecordAudioSimple:
         import speech_recognition as sr
 
         mock_sr.WaitTimeoutError = sr.WaitTimeoutError
+        mock_sr.UnknownValueError = sr.UnknownValueError
 
         vi = VoiceInput(default_config, translator)
 
@@ -153,6 +158,7 @@ class TestRecordAudioSimple:
     def test_unknown_value_error(self, mock_sr, default_config, translator):
         import speech_recognition as sr
 
+        mock_sr.WaitTimeoutError = sr.WaitTimeoutError
         mock_sr.UnknownValueError = sr.UnknownValueError
 
         vi = VoiceInput(default_config, translator)
@@ -174,6 +180,10 @@ class TestRecordAudioSimple:
     def test_system_default_uses_microphone_without_index(
         self, mock_sr, mock_clip, mock_send, default_config, translator
     ):
+        import speech_recognition as sr
+
+        mock_sr.WaitTimeoutError = sr.WaitTimeoutError
+        mock_sr.UnknownValueError = sr.UnknownValueError
         default_config['microphone_index'] = -1
         default_config['ai_enhance'] = False
         vi = VoiceInput(default_config, translator)
