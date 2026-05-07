@@ -60,6 +60,7 @@ jobs:
       - name: Run tests
         env:
           QT_QPA_PLATFORM: offscreen
+        shell: bash
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
             xvfb-run --auto-servernum python -m pytest tests/ -v --tb=short
