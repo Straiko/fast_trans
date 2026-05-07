@@ -55,14 +55,15 @@ def _resolve_config_path() -> Path:
         _XDG_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
         try:
             _LEGACY_CONFIG_PATH.rename(_XDG_CONFIG_PATH)
-            logger.info("Config migrated: %s → %s", _LEGACY_CONFIG_PATH, _XDG_CONFIG_PATH)
+            logger.info('Config migrated: %s → %s', _LEGACY_CONFIG_PATH, _XDG_CONFIG_PATH)
         except OSError:
             try:
                 import shutil
+
                 shutil.copy2(str(_LEGACY_CONFIG_PATH), str(_XDG_CONFIG_PATH))
-                logger.info("Config copied: %s → %s", _LEGACY_CONFIG_PATH, _XDG_CONFIG_PATH)
+                logger.info('Config copied: %s → %s', _LEGACY_CONFIG_PATH, _XDG_CONFIG_PATH)
             except Exception as e:
-                logger.error("Config migration failed: %s", e)
+                logger.error('Config migration failed: %s', e)
         return _XDG_CONFIG_PATH
 
     _XDG_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -118,14 +119,14 @@ class TranslatorApp:
                 with open(self.config_path, encoding='utf-8') as f:
                     config = json.load(f)
                     if not isinstance(config, dict):
-                        logger.error("Config file is not a valid JSON object, using defaults")
+                        logger.error('Config file is not a valid JSON object, using defaults')
                         return default_config
                     default_config.update(config)
-                    logger.info("Config loaded from %s", self.config_path)
+                    logger.info('Config loaded from %s', self.config_path)
             except json.JSONDecodeError as e:
-                logger.error("Failed to parse config JSON: %s, using defaults", e)
+                logger.error('Failed to parse config JSON: %s, using defaults', e)
             except Exception as e:
-                logger.error("Failed to load config: %s, using defaults", e)
+                logger.error('Failed to load config: %s, using defaults', e)
 
         return validate_config(default_config)
 
@@ -134,13 +135,13 @@ class TranslatorApp:
             self.config_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self.config_path, 'w', encoding='utf-8') as f:
                 json.dump(self.config, f, indent=2, ensure_ascii=False)
-            logger.info("Config saved to %s", self.config_path)
+            logger.info('Config saved to %s', self.config_path)
             self.reload_settings()
         except Exception as e:
-            logger.error("Failed to save config: %s", e, exc_info=True)
+            logger.error('Failed to save config: %s', e, exc_info=True)
 
     def reload_settings(self) -> None:
-        logger.info("Applying settings…")
+        logger.info('Applying settings…')
         self.keyboard_listener.stop()
         # Give pynput's listener thread time to fully unregister before starting a new one.
         time.sleep(0.2)
@@ -151,7 +152,7 @@ class TranslatorApp:
         )
         self.keyboard_listener.translation_done = self._on_translation_done
         self.keyboard_listener.start()
-        logger.info("Settings applied — hotkeys active.")
+        logger.info('Settings applied — hotkeys active.')
 
     def create_icon(self) -> QIcon:
         pixmap = QPixmap(64, 64)

@@ -33,7 +33,7 @@ class Translator:
 
     def _get_cache_key(self, text: str, src: str, dest: str) -> str:
         """Generate cache key for translation."""
-        content = f"{text}|{src}|{dest}"
+        content = f'{text}|{src}|{dest}'
         return hashlib.md5(content.encode('utf-8')).hexdigest()
 
     @measure_time
@@ -49,7 +49,7 @@ class Translator:
 
             cache_key = self._get_cache_key(text, src, dest)
             if cache_key in self._translation_cache:
-                logger.debug("Translation cache hit for: %.30s...", text)
+                logger.debug('Translation cache hit for: %.30s...', text)
                 return self._translation_cache[cache_key]
 
             translator = DeepGoogleTranslator(source=src, target=dest)
@@ -62,7 +62,7 @@ class Translator:
             self._translation_cache[cache_key] = result
             return result
         except Exception as e:
-            logger.error("Translation error: %s", e, exc_info=True)
+            logger.error('Translation error: %s', e, exc_info=True)
             return text
 
     def llm_available(self) -> bool:
@@ -81,26 +81,39 @@ class Translator:
             return self._call_chat_api_with_retry(
                 'https://api.openai.com/v1/chat/completions',
                 {'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
-                {'model': 'gpt-4o', 'messages': [{'role': 'user', 'content': prompt}],
-                 'temperature': 0.3, 'max_tokens': 500},
+                {
+                    'model': 'gpt-4o',
+                    'messages': [{'role': 'user', 'content': prompt}],
+                    'temperature': 0.3,
+                    'max_tokens': 500,
+                },
                 extract='openai',
             )
         if api_provider == 'anthropic':
             return self._call_chat_api_with_retry(
                 'https://api.anthropic.com/v1/messages',
-                {'x-api-key': api_key, 'anthropic-version': '2023-06-01',
-                 'Content-Type': 'application/json'},
-                {'model': 'claude-3-5-sonnet-20241022', 'max_tokens': 500,
-                 'messages': [{'role': 'user', 'content': prompt}]},
+                {
+                    'x-api-key': api_key,
+                    'anthropic-version': '2023-06-01',
+                    'Content-Type': 'application/json',
+                },
+                {
+                    'model': 'claude-3-5-sonnet-20241022',
+                    'max_tokens': 500,
+                    'messages': [{'role': 'user', 'content': prompt}],
+                },
                 extract='anthropic',
             )
         if api_provider == 'groq':
             return self._call_chat_api_with_retry(
                 'https://api.groq.com/openai/v1/chat/completions',
                 {'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
-                {'model': 'llama-3.3-70b-versatile',
-                 'messages': [{'role': 'user', 'content': prompt}],
-                 'temperature': 0.3, 'max_tokens': 500},
+                {
+                    'model': 'llama-3.3-70b-versatile',
+                    'messages': [{'role': 'user', 'content': prompt}],
+                    'temperature': 0.3,
+                    'max_tokens': 500,
+                },
                 extract='openai',
             )
         if api_provider == 'huggingface':
@@ -129,10 +142,13 @@ class Translator:
             except requests.RequestException as exc:
                 last_exc = exc
                 if attempt < _MAX_RETRIES - 1:
-                    wait = _RETRY_BACKOFF_BASE * (2 ** attempt)
+                    wait = _RETRY_BACKOFF_BASE * (2**attempt)
                     logger.warning(
-                        "API call failed (attempt %d/%d), retrying in %.1fs: %s",
-                        attempt + 1, _MAX_RETRIES, wait, exc,
+                        'API call failed (attempt %d/%d), retrying in %.1fs: %s',
+                        attempt + 1,
+                        _MAX_RETRIES,
+                        wait,
+                        exc,
                     )
                     time.sleep(wait)
         raise last_exc
@@ -159,10 +175,13 @@ class Translator:
             except requests.RequestException as exc:
                 last_exc = exc
                 if attempt < _MAX_RETRIES - 1:
-                    wait = _RETRY_BACKOFF_BASE * (2 ** attempt)
+                    wait = _RETRY_BACKOFF_BASE * (2**attempt)
                     logger.warning(
-                        "HuggingFace call failed (attempt %d/%d), retrying in %.1fs: %s",
-                        attempt + 1, _MAX_RETRIES, wait, exc,
+                        'HuggingFace call failed (attempt %d/%d), retrying in %.1fs: %s',
+                        attempt + 1,
+                        _MAX_RETRIES,
+                        wait,
+                        exc,
                     )
                     time.sleep(wait)
         raise last_exc
@@ -178,20 +197,20 @@ class Translator:
             return text
 
         prompt = (
-            "You are a text preprocessor for a translation pipeline. "
-            "Fix any errors in the text below so the translator produces a better result. "
-            "Fix: typos, grammar, punctuation, missing words, awkward phrasing, "
-            "and unclear references. Keep the original language and meaning. "
-            "Do NOT translate, summarize, or add commentary. "
-            "Return ONLY the corrected text.\n\n"
-            f"Text:\n{text}\n\nCorrected text:"
+            'You are a text preprocessor for a translation pipeline. '
+            'Fix any errors in the text below so the translator produces a better result. '
+            'Fix: typos, grammar, punctuation, missing words, awkward phrasing, '
+            'and unclear references. Keep the original language and meaning. '
+            'Do NOT translate, summarize, or add commentary. '
+            'Return ONLY the corrected text.\n\n'
+            f'Text:\n{text}\n\nCorrected text:'
         )
 
         try:
             result = self._run_llm_prompt(prompt).strip()
             return result if result else text
         except Exception as e:
-            logger.error("Text enhancement error: %s", e, exc_info=True)
+            logger.error('Text enhancement error: %s', e, exc_info=True)
             return text
 
     @measure_time
@@ -202,19 +221,19 @@ class Translator:
             return text
 
         prompt = (
-            "You are a speech recognition post-processor. "
-            "The user spoke into a microphone and the speech-to-text engine produced the output below. "
-            "Fix recognition errors: wrong homophones, misheard words, missing short words, "
+            'You are a speech recognition post-processor. '
+            'The user spoke into a microphone and the speech-to-text engine produced the output below. '
+            'Fix recognition errors: wrong homophones, misheard words, missing short words, '
             "cut-off endings, and any words that don't fit the context. "
-            "Keep the original language. Keep the original meaning and tone. "
-            "Do NOT translate, summarize, expand, or add commentary. "
-            "Return ONLY the corrected text, nothing else.\n\n"
-            f"Speech-to-text output:\n{text}\n\nCorrected text:"
+            'Keep the original language. Keep the original meaning and tone. '
+            'Do NOT translate, summarize, expand, or add commentary. '
+            'Return ONLY the corrected text, nothing else.\n\n'
+            f'Speech-to-text output:\n{text}\n\nCorrected text:'
         )
 
         try:
             result = self._run_llm_prompt(prompt).strip()
             return result if result else text
         except Exception as e:
-            logger.error("Speech correction error: %s", e, exc_info=True)
+            logger.error('Speech correction error: %s', e, exc_info=True)
             return text

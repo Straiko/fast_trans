@@ -42,7 +42,9 @@ jobs:
             libxcb-randr0 \
             libxcb-render-util0 \
             libxcb-xinerama0 \
-            libxcb-xfixes0
+            libxcb-xfixes0 \
+            libegl1 \
+            libgl1
 
       - name: Install PyAudio (Windows)
         if: runner.os == 'Windows'

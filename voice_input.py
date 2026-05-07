@@ -101,7 +101,9 @@ class VoiceInput:
                 try:
                     mic_ctx = sr.Microphone(device_index=mic_index)
                 except OSError as e:
-                    logger.error('Failed to open microphone %s: %s, falling back to default', mic_index, e)
+                    logger.error(
+                        'Failed to open microphone %s: %s, falling back to default', mic_index, e
+                    )
                     mic_ctx = sr.Microphone()
 
             with mic_ctx as source:

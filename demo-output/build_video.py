@@ -17,11 +17,11 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT.parent
-SCENES_DIR = ROOT / "scenes"
-AUDIO_DIR = ROOT / "audio"
-CLIPS_DIR = ROOT / "clips"
-ASSETS_DIR = ROOT / "assets"
-OUTPUT = ROOT / "olympus_demo.mp4"
+SCENES_DIR = ROOT / 'scenes'
+AUDIO_DIR = ROOT / 'audio'
+CLIPS_DIR = ROOT / 'clips'
+ASSETS_DIR = ROOT / 'assets'
+OUTPUT = ROOT / 'olympus_demo.mp4'
 
 FFMPEG = imageio_ffmpeg.get_ffmpeg_exe()
 FPS = 30
@@ -46,13 +46,13 @@ COLOR_SUCCESS = (74, 222, 128)
 COLOR_WARNING = (251, 191, 36)
 
 
-FONT_PATH_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-FONT_PATH_REG = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
-FONT_PATH_MONO = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf"
-FONT_PATH_CJK = "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc"
-FONT_PATH_CJK_REG = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"
-FONT_PATH_ARABIC = "/usr/share/fonts/truetype/noto/NotoSansArabic-Regular.ttf"
-FONT_PATH_ARABIC_BOLD = "/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf"
+FONT_PATH_BOLD = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
+FONT_PATH_REG = '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+FONT_PATH_MONO = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf'
+FONT_PATH_CJK = '/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc'
+FONT_PATH_CJK_REG = '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc'
+FONT_PATH_ARABIC = '/usr/share/fonts/truetype/noto/NotoSansArabic-Regular.ttf'
+FONT_PATH_ARABIC_BOLD = '/usr/share/fonts/truetype/noto/NotoSansArabic-Bold.ttf'
 
 
 def font(size: int, bold: bool = False, mono: bool = False) -> ImageFont.FreeTypeFont:
@@ -72,13 +72,15 @@ def font_arabic(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
 # ---------------------------------------------------------------- helpers --
 
 
-def text_size(draw: ImageDraw.ImageDraw, text: str, f: ImageFont.FreeTypeFont) -> tuple[float, float]:
+def text_size(
+    draw: ImageDraw.ImageDraw, text: str, f: ImageFont.FreeTypeFont
+) -> tuple[float, float]:
     left, t, r, b = draw.textbbox((0, 0), text, font=f)
     return r - left, b - t
 
 
 def text_offset(f: ImageFont.FreeTypeFont, text: str) -> tuple[float, float]:
-    dummy = Image.new("RGBA", (1, 1))
+    dummy = Image.new('RGBA', (1, 1))
     d = ImageDraw.Draw(dummy)
     left, t, _, _ = d.textbbox((0, 0), text, font=f)
     return left, t
@@ -129,19 +131,19 @@ def glow(
     alpha: int = 150,
 ) -> Image.Image:
     """Add a soft glow overlay."""
-    overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    overlay = Image.new('RGBA', img.size, (0, 0, 0, 0))
     d = ImageDraw.Draw(overlay)
     d.ellipse(
         (cx - radius, cy - radius, cx + radius, cy + radius),
         fill=color + (alpha,),
     )
     overlay = overlay.filter(ImageFilter.GaussianBlur(radius // 2))
-    return Image.alpha_composite(img.convert("RGBA"), overlay)
+    return Image.alpha_composite(img.convert('RGBA'), overlay)
 
 
 def gradient_bg() -> Image.Image:
     """Dark base with two soft purple glows (brand feel)."""
-    base = Image.new("RGBA", (W, H), COLOR_BASE + (255,))
+    base = Image.new('RGBA', (W, H), COLOR_BASE + (255,))
     base = glow(base, 380, 200, 700, COLOR_ACCENT, 70)
     base = glow(base, 1600, 900, 780, COLOR_ACCENT_DEEP, 70)
     base = glow(base, W // 2, H // 2, 500, COLOR_SURFACE, 90)
@@ -170,7 +172,7 @@ def hotkey_key(
     """Draw a physical keyboard key with label."""
     box = (cx - w // 2, cy - h // 2, cx + w // 2, cy + h // 2)
 
-    shadow = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    shadow = Image.new('RGBA', img.size, (0, 0, 0, 0))
     sd = ImageDraw.Draw(shadow)
     sd.rounded_rectangle(
         (box[0] + 6, box[1] + 12, box[2] + 6, box[3] + 16),
@@ -230,9 +232,11 @@ def check_icon(img: Image.Image, cx: int, cy: int, r: int = 40, color=COLOR_SUCC
     d = ImageDraw.Draw(img)
     d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=color + (255,))
     d.line(
-        [(cx - r * 0.45, cy + r * 0.05),
-         (cx - r * 0.1, cy + r * 0.38),
-         (cx + r * 0.5, cy - r * 0.3)],
+        [
+            (cx - r * 0.45, cy + r * 0.05),
+            (cx - r * 0.1, cy + r * 0.38),
+            (cx + r * 0.5, cy - r * 0.3),
+        ],
         fill=(15, 20, 25, 255),
         width=max(4, r // 7),
     )
@@ -276,10 +280,10 @@ def scene_1_hook(idx: int) -> Image.Image:
     img = gradient_bg()
     img = subtle_noise(img)
 
-    icon_path = PROJECT / "icon.png"
+    icon_path = PROJECT / 'icon.png'
     if icon_path.exists():
-        icon = Image.open(icon_path).convert("RGBA").resize((300, 300), Image.Resampling.LANCZOS)
-        glow_layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        icon = Image.open(icon_path).convert('RGBA').resize((300, 300), Image.Resampling.LANCZOS)
+        glow_layer = Image.new('RGBA', img.size, (0, 0, 0, 0))
         gd = ImageDraw.Draw(glow_layer)
         gd.ellipse(
             (W // 2 - 300, H // 2 - 520, W // 2 + 300, H // 2 + 80),
@@ -290,17 +294,26 @@ def scene_1_hook(idx: int) -> Image.Image:
         img.alpha_composite(icon, (W // 2 - 150, H // 2 - 370))
 
     d = ImageDraw.Draw(img)
-    centered_text(d, "OLYMPUS", W // 2, H // 2 + 40, font(160, bold=True), COLOR_TEXT)
+    centered_text(d, 'OLYMPUS', W // 2, H // 2 + 40, font(160, bold=True), COLOR_TEXT)
     centered_text(
         d,
-        "Мгновенный переводчик на рабочем столе",
+        'Мгновенный переводчик на рабочем столе',
         W // 2,
         H // 2 + 170,
         font(40),
         COLOR_SUBTEXT,
     )
-    pill(img, "ТЕКСТ  •  ГОЛОС  •  AI", W // 2, H // 2 + 290, fsize=24, padding=38,
-         bg=(*COLOR_GLASS, 255), fg=COLOR_ACCENT_HOVER, border=COLOR_BORDER)
+    pill(
+        img,
+        'ТЕКСТ  •  ГОЛОС  •  AI',
+        W // 2,
+        H // 2 + 290,
+        fsize=24,
+        padding=38,
+        bg=(*COLOR_GLASS, 255),
+        fg=COLOR_ACCENT_HOVER,
+        border=COLOR_BORDER,
+    )
 
     footer_dots(img, 8, idx)
     return img
@@ -309,15 +322,15 @@ def scene_1_hook(idx: int) -> Image.Image:
 def scene_2_problem(idx: int) -> Image.Image:
     img = gradient_bg()
     img = subtle_noise(img)
-    header(img, "Проблема", "Старый способ переводить")
+    header(img, 'Проблема', 'Старый способ переводить')
 
     steps = [
-        "Выделить текст",
-        "Скопировать — Ctrl+C",
-        "Открыть вкладку браузера",
-        "Вставить в переводчик",
-        "Скопировать перевод",
-        "Вернуться в приложение",
+        'Выделить текст',
+        'Скопировать — Ctrl+C',
+        'Открыть вкладку браузера',
+        'Вставить в переводчик',
+        'Скопировать перевод',
+        'Вернуться в приложение',
     ]
     y = 360
     for i, step in enumerate(steps):
@@ -331,8 +344,17 @@ def scene_2_problem(idx: int) -> Image.Image:
             width=3,
         )
 
-    pill(img, "6 шагов  •  ~20 секунд каждый раз", W // 2, y + len(steps) * 95 + 50,
-         fsize=24, padding=34, bg=(*COLOR_DANGER, 255), fg=(255, 255, 255), border=COLOR_DANGER_DEEP)
+    pill(
+        img,
+        '6 шагов  •  ~20 секунд каждый раз',
+        W // 2,
+        y + len(steps) * 95 + 50,
+        fsize=24,
+        padding=34,
+        bg=(*COLOR_DANGER, 255),
+        fg=(255, 255, 255),
+        border=COLOR_DANGER_DEEP,
+    )
 
     footer_dots(img, 8, idx)
     return img
@@ -341,24 +363,28 @@ def scene_2_problem(idx: int) -> Image.Image:
 def scene_3_magic(idx: int) -> Image.Image:
     img = gradient_bg()
     img = subtle_noise(img)
-    header(img, "Решение", "Новый способ")
+    header(img, 'Решение', 'Новый способ')
 
     y_key = 490
-    hotkey_key(img, "Ctrl",  770, y_key, fsize=52, w=220, h=150)
-    hotkey_key(img, "Shift", 1020, y_key, fsize=52, w=240, h=150)
-    hotkey_key(img, "T",     1240, y_key, fsize=56, w=180, h=150, highlight=True)
+    hotkey_key(img, 'Ctrl', 770, y_key, fsize=52, w=220, h=150)
+    hotkey_key(img, 'Shift', 1020, y_key, fsize=52, w=240, h=150)
+    hotkey_key(img, 'T', 1240, y_key, fsize=56, w=180, h=150, highlight=True)
 
     d = ImageDraw.Draw(img)
-    centered_text(d, "+",  895, y_key, font(72, bold=True), COLOR_MUTED)
-    centered_text(d, "+", 1130, y_key, font(72, bold=True), COLOR_MUTED)
+    centered_text(d, '+', 895, y_key, font(72, bold=True), COLOR_MUTED)
+    centered_text(d, '+', 1130, y_key, font(72, bold=True), COLOR_MUTED)
 
     centered_text(
-        d, "нажал один раз — текст уже переведён",
-        W // 2, 690, font(32), COLOR_SUBTEXT,
+        d,
+        'нажал один раз — текст уже переведён',
+        W // 2,
+        690,
+        font(32),
+        COLOR_SUBTEXT,
     )
 
     f_chip = font(30, bold=True)
-    chip_text = "Автозамена выделенного"
+    chip_text = 'Автозамена выделенного'
     tw, th = text_size(d, chip_text, f_chip)
     chip_w = tw + 150
     chip_h = 86
@@ -386,11 +412,11 @@ def scene_3_magic(idx: int) -> Image.Image:
 def scene_4_voice(idx: int) -> Image.Image:
     img = gradient_bg()
     img = subtle_noise(img)
-    header(img, "Голосовой ввод", "Говори — перевод вставится сам")
+    header(img, 'Голосовой ввод', 'Говори — перевод вставится сам')
 
     cx, cy = 520, 590
     for r, a in [(240, 55), (190, 90), (150, 130)]:
-        glow_layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        glow_layer = Image.new('RGBA', img.size, (0, 0, 0, 0))
         gd = ImageDraw.Draw(glow_layer)
         gd.ellipse((cx - r, cy - r, cx + r, cy + r), fill=COLOR_ACCENT + (a,))
         glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(44))
@@ -398,10 +424,8 @@ def scene_4_voice(idx: int) -> Image.Image:
 
     d = ImageDraw.Draw(img)
     d.ellipse((cx - 110, cy - 125, cx + 110, cy + 125), fill=COLOR_ACCENT)
-    d.rounded_rectangle((cx - 36, cy - 80, cx + 36, cy + 30), radius=36,
-                        fill=(255, 255, 255, 255))
-    d.arc((cx - 66, cy + 10, cx + 66, cy + 110),
-          0, 180, fill=(255, 255, 255, 255), width=10)
+    d.rounded_rectangle((cx - 36, cy - 80, cx + 36, cy + 30), radius=36, fill=(255, 255, 255, 255))
+    d.arc((cx - 66, cy + 10, cx + 66, cy + 110), 0, 180, fill=(255, 255, 255, 255), width=10)
     d.line((cx, cy + 75, cx, cy + 110), fill=(255, 255, 255, 255), width=10)
 
     for i, amp in enumerate([45, 78, 60, 95, 52, 82, 42]):
@@ -413,21 +437,25 @@ def scene_4_voice(idx: int) -> Image.Image:
         )
 
     kx, ky = 1350, 500
-    hotkey_key(img, "Ctrl",  kx,        ky, fsize=44, w=180, h=130)
-    hotkey_key(img, "Shift", kx + 220,  ky, fsize=44, w=200, h=130)
-    hotkey_key(img, "V",     kx + 420,  ky, fsize=52, w=150, h=130, highlight=True)
+    hotkey_key(img, 'Ctrl', kx, ky, fsize=44, w=180, h=130)
+    hotkey_key(img, 'Shift', kx + 220, ky, fsize=44, w=200, h=130)
+    hotkey_key(img, 'V', kx + 420, ky, fsize=52, w=150, h=130, highlight=True)
 
     d = ImageDraw.Draw(img)
-    centered_text(d, "+", kx + 110, ky, font(54, bold=True), COLOR_MUTED)
-    centered_text(d, "+", kx + 320, ky, font(54, bold=True), COLOR_MUTED)
+    centered_text(d, '+', kx + 110, ky, font(54, bold=True), COLOR_MUTED)
+    centered_text(d, '+', kx + 320, ky, font(54, bold=True), COLOR_MUTED)
 
     centered_text(
-        d, "микрофон → распознавание → перевод → вставка",
-        1560, 660, font(26), COLOR_SUBTEXT,
+        d,
+        'микрофон → распознавание → перевод → вставка',
+        1560,
+        660,
+        font(26),
+        COLOR_SUBTEXT,
     )
 
     f_chip = font(26, bold=True)
-    chip_text = "Запись останавливается после паузы"
+    chip_text = 'Запись останавливается после паузы'
     tw, th = text_size(d, chip_text, f_chip)
     chip_w = tw + 130
     chip_h = 74
@@ -455,7 +483,7 @@ def scene_4_voice(idx: int) -> Image.Image:
 def scene_5_ai(idx: int) -> Image.Image:
     img = gradient_bg()
     img = subtle_noise(img)
-    header(img, "AI-улучшение", "Ошибки — исправлены")
+    header(img, 'AI-улучшение', 'Ошибки — исправлены')
 
     def card(
         box: tuple[int, int, int, int],
@@ -464,11 +492,9 @@ def scene_5_ai(idx: int) -> Image.Image:
         tone: str,
     ):
         d = ImageDraw.Draw(img)
-        tone_color = COLOR_DANGER if tone == "before" else COLOR_SUCCESS
+        tone_color = COLOR_DANGER if tone == 'before' else COLOR_SUCCESS
         d.rounded_rectangle(box, radius=24, fill=(*COLOR_GLASS, 220), outline=COLOR_BORDER, width=2)
-        d.rounded_rectangle(
-            (box[0], box[1], box[0] + 8, box[3]), radius=4, fill=tone_color
-        )
+        d.rounded_rectangle((box[0], box[1], box[0] + 8, box[3]), radius=4, fill=tone_color)
 
         centered_text(
             d,
@@ -479,7 +505,7 @@ def scene_5_ai(idx: int) -> Image.Image:
             tone_color,
         )
 
-        lines = body.split("\n")
+        lines = body.split('\n')
         total_h = len(lines) * 42
         y = (box[1] + box[3]) // 2 - total_h // 2 + 20
         for line in lines:
@@ -488,41 +514,44 @@ def scene_5_ai(idx: int) -> Image.Image:
 
     card(
         (220, 420, 860, 820),
-        "ДО — распознано",
-        "«созвать в митинга\nзавтро в десять\nутро»",
-        "before",
+        'ДО — распознано',
+        '«созвать в митинга\nзавтро в десять\nутро»',
+        'before',
     )
     card(
         (1060, 420, 1700, 820),
-        "ПОСЛЕ — AI исправил",
-        "«Назначить встречу\nзавтра в 10:00\nутра»",
-        "after",
+        'ПОСЛЕ — AI исправил',
+        '«Назначить встречу\nзавтра в 10:00\nутра»',
+        'after',
     )
 
     d = ImageDraw.Draw(img)
     ax, ay = 960, 620
 
-    glow_layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    glow_layer = Image.new('RGBA', img.size, (0, 0, 0, 0))
     gd = ImageDraw.Draw(glow_layer)
     gd.ellipse((ax - 90, ay - 90, ax + 90, ay + 90), fill=COLOR_ACCENT + (130,))
     glow_layer = glow_layer.filter(ImageFilter.GaussianBlur(30))
     img = Image.alpha_composite(img, glow_layer)
 
     d = ImageDraw.Draw(img)
-    d.ellipse((ax - 64, ay - 64, ax + 64, ay + 64),
-              fill=COLOR_ACCENT, outline=COLOR_ACCENT_HOVER, width=3)
-    centered_text(d, "AI", ax, ay, font(48, bold=True), (255, 255, 255))
+    d.ellipse(
+        (ax - 64, ay - 64, ax + 64, ay + 64), fill=COLOR_ACCENT, outline=COLOR_ACCENT_HOVER, width=3
+    )
+    centered_text(d, 'AI', ax, ay, font(48, bold=True), (255, 255, 255))
 
     def sparkle(sx, sy, sz, color=COLOR_WARNING):
         d.polygon(
-            [(sx, sy - sz),
-             (sx + sz * 0.22, sy - sz * 0.22),
-             (sx + sz, sy),
-             (sx + sz * 0.22, sy + sz * 0.22),
-             (sx, sy + sz),
-             (sx - sz * 0.22, sy + sz * 0.22),
-             (sx - sz, sy),
-             (sx - sz * 0.22, sy - sz * 0.22)],
+            [
+                (sx, sy - sz),
+                (sx + sz * 0.22, sy - sz * 0.22),
+                (sx + sz, sy),
+                (sx + sz * 0.22, sy + sz * 0.22),
+                (sx, sy + sz),
+                (sx - sz * 0.22, sy + sz * 0.22),
+                (sx - sz, sy),
+                (sx - sz * 0.22, sy - sz * 0.22),
+            ],
             fill=color,
         )
 
@@ -531,8 +560,17 @@ def scene_5_ai(idx: int) -> Image.Image:
     sparkle(ax - 120, ay + 100, 12)
     sparkle(ax + 130, ay + 85, 16)
 
-    pill(img, "также улучшает промпты для ChatGPT и Claude", W // 2, 900,
-         fsize=22, padding=28, bg=(*COLOR_ACCENT, 50), fg=COLOR_ACCENT_HOVER, border=COLOR_ACCENT)
+    pill(
+        img,
+        'также улучшает промпты для ChatGPT и Claude',
+        W // 2,
+        900,
+        fsize=22,
+        padding=28,
+        bg=(*COLOR_ACCENT, 50),
+        fg=COLOR_ACCENT_HOVER,
+        border=COLOR_ACCENT,
+    )
 
     footer_dots(img, 8, idx)
     return img
@@ -541,17 +579,24 @@ def scene_5_ai(idx: int) -> Image.Image:
 def scene_6_languages(idx: int) -> Image.Image:
     img = gradient_bg()
     img = subtle_noise(img)
-    header(img, "Языки", "15 языков — из коробки")
+    header(img, 'Языки', '15 языков — из коробки')
 
     langs = [
-        ("EN", "English", None),     ("RU", "Русский", None),
-        ("UK", "Українська", None),  ("DE", "Deutsch", None),
-        ("FR", "Français", None),    ("ES", "Español", None),
-        ("IT", "Italiano", None),    ("PT", "Português", None),
-        ("PL", "Polski", None),      ("TR", "Türkçe", None),
-        ("ZH", "中文", "cjk"),       ("JA", "日本語", "cjk"),
-        ("KO", "한국어", "cjk"),     ("AR", "العربية", "arabic"),
-        ("AUTO", "Авто", None),
+        ('EN', 'English', None),
+        ('RU', 'Русский', None),
+        ('UK', 'Українська', None),
+        ('DE', 'Deutsch', None),
+        ('FR', 'Français', None),
+        ('ES', 'Español', None),
+        ('IT', 'Italiano', None),
+        ('PT', 'Português', None),
+        ('PL', 'Polski', None),
+        ('TR', 'Türkçe', None),
+        ('ZH', '中文', 'cjk'),
+        ('JA', '日本語', 'cjk'),
+        ('KO', '한국어', 'cjk'),
+        ('AR', 'العربية', 'arabic'),
+        ('AUTO', 'Авто', None),
     ]
 
     cols = 5
@@ -568,7 +613,7 @@ def scene_6_languages(idx: int) -> Image.Image:
         x = x0 + c * (cell_w + gap)
         y = y0 + r * (cell_h + gap)
         box = (x, y, x + cell_w, y + cell_h)
-        accent = code == "AUTO"
+        accent = code == 'AUTO'
         d.rounded_rectangle(
             box,
             radius=22,
@@ -577,19 +622,26 @@ def scene_6_languages(idx: int) -> Image.Image:
             width=2,
         )
         centered_text(
-            d, code, x + cell_w // 2, y + 48,
+            d,
+            code,
+            x + cell_w // 2,
+            y + 48,
             font(40, bold=True),
             COLOR_ACCENT_HOVER if accent else COLOR_TEXT,
         )
-        if script == "cjk":
+        if script == 'cjk':
             name_font = font_cjk(24)
-        elif script == "arabic":
+        elif script == 'arabic':
             name_font = font_arabic(24)
         else:
             name_font = font(22)
         centered_text(
-            d, name, x + cell_w // 2, y + 100,
-            name_font, COLOR_SUBTEXT,
+            d,
+            name,
+            x + cell_w // 2,
+            y + 100,
+            name_font,
+            COLOR_SUBTEXT,
         )
 
     footer_dots(img, 8, idx)
@@ -599,15 +651,15 @@ def scene_6_languages(idx: int) -> Image.Image:
 def scene_7_benefits(idx: int) -> Image.Image:
     img = gradient_bg()
     img = subtle_noise(img)
-    header(img, "Почему Olympus", "Всё, что нужно — из коробки")
+    header(img, 'Почему Olympus', 'Всё, что нужно — из коробки')
 
     items = [
-        ("Бесплатно", "Groq и HuggingFace — без оплаты"),
-        ("Работает в трее", "Всегда под рукой, не мешает"),
-        ("Без админки", "Портативная установка в один клик"),
-        ("105 тестов", "Стабильность, проверенная кодом"),
-        ("Open source", "MIT — меняй под себя"),
-        ("Windows и Linux", "Один код, две платформы"),
+        ('Бесплатно', 'Groq и HuggingFace — без оплаты'),
+        ('Работает в трее', 'Всегда под рукой, не мешает'),
+        ('Без админки', 'Портативная установка в один клик'),
+        ('105 тестов', 'Стабильность, проверенная кодом'),
+        ('Open source', 'MIT — меняй под себя'),
+        ('Windows и Linux', 'Один код, две платформы'),
     ]
 
     cols = 2
@@ -637,31 +689,44 @@ def scene_8_cta(idx: int) -> Image.Image:
     img = gradient_bg()
     img = subtle_noise(img)
 
-    icon_path = PROJECT / "icon.png"
+    icon_path = PROJECT / 'icon.png'
     if icon_path.exists():
-        icon = Image.open(icon_path).convert("RGBA").resize((180, 180), Image.Resampling.LANCZOS)
+        icon = Image.open(icon_path).convert('RGBA').resize((180, 180), Image.Resampling.LANCZOS)
         img.alpha_composite(icon, (W // 2 - 90, 200))
 
     d = ImageDraw.Draw(img)
-    centered_text(d, "Скачай бесплатно", W // 2, 460, font(90, bold=True), COLOR_TEXT)
+    centered_text(d, 'Скачай бесплатно', W // 2, 460, font(90, bold=True), COLOR_TEXT)
     centered_text(
-        d, "1 клик — без админки — портативно",
-        W // 2, 560, font(34), COLOR_SUBTEXT,
+        d,
+        '1 клик — без админки — портативно',
+        W // 2,
+        560,
+        font(34),
+        COLOR_SUBTEXT,
     )
 
     box = (W // 2 - 560, 650, W // 2 + 560, 780)
     d.rounded_rectangle(box, radius=28, fill=COLOR_ACCENT, outline=COLOR_ACCENT_HOVER, width=2)
     centered_text(
         d,
-        "github.com/Straiko/fast_trans",
+        'github.com/Straiko/fast_trans',
         W // 2,
         (box[1] + box[3]) // 2,
         font(44, bold=True, mono=True),
         (255, 255, 255),
     )
 
-    pill(img, "MIT  •  Python 3.10+  •  PyQt6", W // 2, 860,
-         fsize=24, padding=32, bg=(*COLOR_GLASS, 210), fg=COLOR_SUBTEXT, border=COLOR_BORDER)
+    pill(
+        img,
+        'MIT  •  Python 3.10+  •  PyQt6',
+        W // 2,
+        860,
+        fsize=24,
+        padding=32,
+        bg=(*COLOR_GLASS, 210),
+        fg=COLOR_SUBTEXT,
+        border=COLOR_BORDER,
+    )
 
     footer_dots(img, 8, idx)
     return img
@@ -669,30 +734,62 @@ def scene_8_cta(idx: int) -> Image.Image:
 
 SCENES = [
     # (render_fn, duration_sec, narration_text, voice, rate)
-    (scene_1_hook,     4.0,
-     "Olympus. Мгновенный переводчик прямо на твоём рабочем столе.",
-     "ru-RU-DmitryNeural", "+0%"),
-    (scene_2_problem,  6.0,
-     "Устал копировать текст, открывать вкладку переводчика, вставлять, а потом копировать обратно?",
-     "ru-RU-DmitryNeural", "+0%"),
-    (scene_3_magic,    5.5,
-     "Новый способ. Выделил текст, нажал Ctrl Shift T — перевод уже на месте.",
-     "ru-RU-DmitryNeural", "+0%"),
-    (scene_4_voice,    6.0,
-     "Нужен голос? Ctrl Shift V — говоришь, речь распознаётся, переводится и вставляется автоматически.",
-     "ru-RU-DmitryNeural", "+0%"),
-    (scene_5_ai,       5.5,
-     "Встроенный AI исправляет ошибки распознавания и улучшает текст для нейросетей.",
-     "ru-RU-DmitryNeural", "+0%"),
-    (scene_6_languages, 4.5,
-     "Пятнадцать языков — от английского до японского.",
-     "ru-RU-DmitryNeural", "+0%"),
-    (scene_7_benefits, 5.5,
-     "Бесплатно, работает в трее, без прав администратора, сто пять тестов и открытый код.",
-     "ru-RU-DmitryNeural", "+0%"),
-    (scene_8_cta,      5.0,
-     "Скачай сейчас. Гитхаб — Straiko слэш fast trans.",
-     "ru-RU-DmitryNeural", "+0%"),
+    (
+        scene_1_hook,
+        4.0,
+        'Olympus. Мгновенный переводчик прямо на твоём рабочем столе.',
+        'ru-RU-DmitryNeural',
+        '+0%',
+    ),
+    (
+        scene_2_problem,
+        6.0,
+        'Устал копировать текст, открывать вкладку переводчика, вставлять, а потом копировать обратно?',
+        'ru-RU-DmitryNeural',
+        '+0%',
+    ),
+    (
+        scene_3_magic,
+        5.5,
+        'Новый способ. Выделил текст, нажал Ctrl Shift T — перевод уже на месте.',
+        'ru-RU-DmitryNeural',
+        '+0%',
+    ),
+    (
+        scene_4_voice,
+        6.0,
+        'Нужен голос? Ctrl Shift V — говоришь, речь распознаётся, переводится и вставляется автоматически.',
+        'ru-RU-DmitryNeural',
+        '+0%',
+    ),
+    (
+        scene_5_ai,
+        5.5,
+        'Встроенный AI исправляет ошибки распознавания и улучшает текст для нейросетей.',
+        'ru-RU-DmitryNeural',
+        '+0%',
+    ),
+    (
+        scene_6_languages,
+        4.5,
+        'Пятнадцать языков — от английского до японского.',
+        'ru-RU-DmitryNeural',
+        '+0%',
+    ),
+    (
+        scene_7_benefits,
+        5.5,
+        'Бесплатно, работает в трее, без прав администратора, сто пять тестов и открытый код.',
+        'ru-RU-DmitryNeural',
+        '+0%',
+    ),
+    (
+        scene_8_cta,
+        5.0,
+        'Скачай сейчас. Гитхаб — Straiko слэш fast trans.',
+        'ru-RU-DmitryNeural',
+        '+0%',
+    ),
 ]
 
 
@@ -705,31 +802,41 @@ async def tts(text: str, voice: str, rate: str, out_path: Path):
 
 
 def audio_duration(path: Path) -> float:
-    ffprobe = FFMPEG.replace("ffmpeg", "ffprobe")
+    ffprobe = FFMPEG.replace('ffmpeg', 'ffprobe')
     if not Path(ffprobe).exists():
-        cmd = [FFMPEG, "-i", str(path), "-hide_banner"]
+        cmd = [FFMPEG, '-i', str(path), '-hide_banner']
         p = subprocess.run(cmd, capture_output=True, text=True)
         out = p.stderr
         for line in out.splitlines():
-            if "Duration:" in line:
-                ts = line.split("Duration:")[1].split(",")[0].strip()
-                h, m, s = ts.split(":")
+            if 'Duration:' in line:
+                ts = line.split('Duration:')[1].split(',')[0].strip()
+                h, m, s = ts.split(':')
                 return int(h) * 3600 + int(m) * 60 + float(s)
         return 0.0
-    cmd = [ffprobe, "-v", "error", "-show_entries", "format=duration",
-           "-of", "default=noprint_wrappers=1:nokey=1", str(path)]
+    cmd = [
+        ffprobe,
+        '-v',
+        'error',
+        '-show_entries',
+        'format=duration',
+        '-of',
+        'default=noprint_wrappers=1:nokey=1',
+        str(path),
+    ]
     p = subprocess.run(cmd, capture_output=True, text=True)
-    return float(p.stdout.strip() or "0")
+    return float(p.stdout.strip() or '0')
 
 
 def run(cmd: list[str]):
     p = subprocess.run(cmd, capture_output=True, text=True)
     if p.returncode != 0:
-        print("STDERR:", p.stderr[-2000:])
-        raise RuntimeError(f"Command failed: {' '.join(cmd[:6])}")
+        print('STDERR:', p.stderr[-2000:])
+        raise RuntimeError(f'Command failed: {" ".join(cmd[:6])}')
 
 
-def render_clip(scene_png: Path, audio: Path, dur: float, out: Path, zoom_start: float, zoom_end: float):
+def render_clip(
+    scene_png: Path, audio: Path, dur: float, out: Path, zoom_start: float, zoom_end: float
+):
     """Image + audio → mp4 clip with gentle ken-burns + fade in/out."""
     frames = max(1, int(dur * FPS))
     zp_expr = (
@@ -738,37 +845,69 @@ def render_clip(scene_png: Path, audio: Path, dur: float, out: Path, zoom_start:
     )
 
     vf = (
-        f"{zp_expr},"
-        f"format=yuv420p,"
-        f"fade=t=in:st=0:d=0.4,"
-        f"fade=t=out:st={max(0, dur - 0.45):.2f}:d=0.45"
+        f'{zp_expr},'
+        f'format=yuv420p,'
+        f'fade=t=in:st=0:d=0.4,'
+        f'fade=t=out:st={max(0, dur - 0.45):.2f}:d=0.45'
     )
-    af = (
-        f"afade=t=in:st=0:d=0.3,"
-        f"afade=t=out:st={max(0, dur - 0.4):.2f}:d=0.4,"
-        f"apad=whole_dur={dur}"
-    )
+    af = f'afade=t=in:st=0:d=0.3,afade=t=out:st={max(0, dur - 0.4):.2f}:d=0.4,apad=whole_dur={dur}'
     cmd = [
-        FFMPEG, "-y",
-        "-loop", "1", "-framerate", str(FPS), "-t", f"{dur}", "-i", str(scene_png),
-        "-i", str(audio),
-        "-filter_complex", f"[0:v]{vf}[v];[1:a]{af}[a]",
-        "-map", "[v]", "-map", "[a]",
-        "-c:v", "libx264", "-preset", "medium", "-crf", "19", "-pix_fmt", "yuv420p",
-        "-c:a", "aac", "-b:a", "192k", "-ar", "44100",
-        "-t", f"{dur}",
-        "-r", str(FPS),
+        FFMPEG,
+        '-y',
+        '-loop',
+        '1',
+        '-framerate',
+        str(FPS),
+        '-t',
+        f'{dur}',
+        '-i',
+        str(scene_png),
+        '-i',
+        str(audio),
+        '-filter_complex',
+        f'[0:v]{vf}[v];[1:a]{af}[a]',
+        '-map',
+        '[v]',
+        '-map',
+        '[a]',
+        '-c:v',
+        'libx264',
+        '-preset',
+        'medium',
+        '-crf',
+        '19',
+        '-pix_fmt',
+        'yuv420p',
+        '-c:a',
+        'aac',
+        '-b:a',
+        '192k',
+        '-ar',
+        '44100',
+        '-t',
+        f'{dur}',
+        '-r',
+        str(FPS),
         str(out),
     ]
     run(cmd)
 
 
 def concat_clips(clips: list[Path], out: Path):
-    list_file = CLIPS_DIR / "concat.txt"
-    list_file.write_text("\n".join(f"file '{p.resolve()}'" for p in clips))
+    list_file = CLIPS_DIR / 'concat.txt'
+    list_file.write_text('\n'.join(f"file '{p.resolve()}'" for p in clips))
     cmd = [
-        FFMPEG, "-y", "-f", "concat", "-safe", "0", "-i", str(list_file),
-        "-c", "copy", str(out),
+        FFMPEG,
+        '-y',
+        '-f',
+        'concat',
+        '-safe',
+        '0',
+        '-i',
+        str(list_file),
+        '-c',
+        'copy',
+        str(out),
     ]
     run(cmd)
 
@@ -777,42 +916,42 @@ async def main():
     for d in (SCENES_DIR, AUDIO_DIR, CLIPS_DIR, ASSETS_DIR):
         d.mkdir(parents=True, exist_ok=True)
 
-    print("[1/4] Rendering scenes...")
+    print('[1/4] Rendering scenes...')
     scene_pngs = []
     for i, (fn, _, _, _, _) in enumerate(SCENES):
-        png = SCENES_DIR / f"scene_{i+1:02d}.png"
-        print(f"  - {png.name}")
+        png = SCENES_DIR / f'scene_{i + 1:02d}.png'
+        print(f'  - {png.name}')
         img = fn(i)
-        img.convert("RGB").save(png, "PNG", optimize=True)
+        img.convert('RGB').save(png, 'PNG', optimize=True)
         scene_pngs.append(png)
 
-    print("[2/4] Generating narration (edge-tts)...")
+    print('[2/4] Generating narration (edge-tts)...')
     audios = []
     durations = []
     for i, (_, dur, text, voice, rate) in enumerate(SCENES):
-        mp3 = AUDIO_DIR / f"audio_{i+1:02d}.mp3"
-        print(f"  - {mp3.name}  [{voice}]")
+        mp3 = AUDIO_DIR / f'audio_{i + 1:02d}.mp3'
+        print(f'  - {mp3.name}  [{voice}]')
         await tts(text, voice, rate, mp3)
         real = audio_duration(mp3)
         final = max(dur, real + 0.6)
         durations.append(final)
         audios.append(mp3)
-        print(f"      narration {real:.2f}s -> clip {final:.2f}s")
+        print(f'      narration {real:.2f}s -> clip {final:.2f}s')
 
-    print("[3/4] Building per-scene clips...")
+    print('[3/4] Building per-scene clips...')
     clips = []
     for i, (png, audio, dur) in enumerate(zip(scene_pngs, audios, durations, strict=False)):
-        clip = CLIPS_DIR / f"clip_{i+1:02d}.mp4"
-        print(f"  - {clip.name}  ({dur:.2f}s)")
+        clip = CLIPS_DIR / f'clip_{i + 1:02d}.mp4'
+        print(f'  - {clip.name}  ({dur:.2f}s)')
         render_clip(png, audio, dur, clip, 1.0, 1.06)
         clips.append(clip)
 
-    print("[4/4] Concatenating final video...")
+    print('[4/4] Concatenating final video...')
     concat_clips(clips, OUTPUT)
     total = sum(durations)
-    print(f"\nDone: {OUTPUT}")
-    print(f"Total duration: {total:.2f}s")
+    print(f'\nDone: {OUTPUT}')
+    print(f'Total duration: {total:.2f}s')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     asyncio.run(main())

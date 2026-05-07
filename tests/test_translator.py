@@ -162,7 +162,10 @@ class TestCallChatApi:
         )
         assert result == 'hello'
         mock_post.assert_called_once()
-        assert mock_post.call_args[1].get('timeout') == 30 or mock_post.call_args.kwargs.get('timeout') == 30
+        assert (
+            mock_post.call_args[1].get('timeout') == 30
+            or mock_post.call_args.kwargs.get('timeout') == 30
+        )
 
     @patch('translator.requests.post')
     def test_anthropic_extract(self, mock_post, translator):
@@ -180,13 +183,15 @@ class TestCallChatApi:
         assert result == 'bonjour'
 
     def test_unknown_extract_raises(self, translator):
-        with pytest.raises(ValueError, match='Unknown extract mode'), \
-             patch('translator.requests.post') as mock_post:
-                mock_resp = MagicMock()
-                mock_resp.json.return_value = {}
-                mock_resp.raise_for_status = MagicMock()
-                mock_post.return_value = mock_resp
-                translator._call_chat_api('https://api.example.com', {}, {}, extract='invalid')
+        with (
+            pytest.raises(ValueError, match='Unknown extract mode'),
+            patch('translator.requests.post') as mock_post,
+        ):
+            mock_resp = MagicMock()
+            mock_resp.json.return_value = {}
+            mock_resp.raise_for_status = MagicMock()
+            mock_post.return_value = mock_resp
+            translator._call_chat_api('https://api.example.com', {}, {}, extract='invalid')
 
 
 class TestRunLlmPrompt:

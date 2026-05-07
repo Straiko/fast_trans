@@ -20,44 +20,44 @@ logger = logging.getLogger(__name__)
 
 def _normalize_hotkey_for_pynput(spec: str) -> str:
     """ctrl+shift+l → <ctrl>+<shift>+l  (pynput GlobalHotKeys format)."""
-    parts = [p.strip().lower() for p in spec.split("+")]
+    parts = [p.strip().lower() for p in spec.split('+')]
     out: list[str] = []
     for p in parts:
         if not p:
             continue
-        if p in ("ctrl", "control", "ctl"):
-            out.append("<ctrl>")
-        elif p == "shift":
-            out.append("<shift>")
-        elif p in ("alt", "meta", "option"):
-            out.append("<alt>")
-        elif p in ("win", "super", "cmd", "command", "windows"):
-            out.append("<cmd>")
-        elif re.fullmatch(r"f(1[0-9]?|2[0-4]?|[1-9])", p):
-            out.append(f"<{p}>")
+        if p in ('ctrl', 'control', 'ctl'):
+            out.append('<ctrl>')
+        elif p == 'shift':
+            out.append('<shift>')
+        elif p in ('alt', 'meta', 'option'):
+            out.append('<alt>')
+        elif p in ('win', 'super', 'cmd', 'command', 'windows'):
+            out.append('<cmd>')
+        elif re.fullmatch(r'f(1[0-9]?|2[0-4]?|[1-9])', p):
+            out.append(f'<{p}>')
         elif len(p) == 1:
             out.append(p)
         else:
-            out.append(f"<{p}>")
-    return "+".join(out)
+            out.append(f'<{p}>')
+    return '+'.join(out)
 
 
 def _parse_send_parts(spec: str):
     """Parse ctrl+c into a sequence of keys for press/release."""
     from pynput.keyboard import Key
 
-    parts = [p.strip().lower() for p in spec.split("+")]
+    parts = [p.strip().lower() for p in spec.split('+')]
     keys: list = []
     for p in parts:
-        if p in ("ctrl", "control", "ctl"):
+        if p in ('ctrl', 'control', 'ctl'):
             keys.append(Key.ctrl)
-        elif p == "shift":
+        elif p == 'shift':
             keys.append(Key.shift)
-        elif p in ("alt", "meta", "option"):
+        elif p in ('alt', 'meta', 'option'):
             keys.append(Key.alt)
-        elif p in ("win", "super", "cmd", "command", "windows"):
+        elif p in ('win', 'super', 'cmd', 'command', 'windows'):
             keys.append(Key.cmd)
-        elif re.fullmatch(r"f(1[0-9]?|2[0-4]?|[1-9])", p):
+        elif re.fullmatch(r'f(1[0-9]?|2[0-4]?|[1-9])', p):
             keys.append(getattr(Key, p))
         elif len(p) == 1:
             keys.append(p)
@@ -85,16 +85,19 @@ class KeyboardLibBackend(InputBackend):
 
     def start_hotkeys(self, mapping: list[tuple[str, Callable]]) -> None:
         import keyboard
+
         for hotkey, cb in mapping:
             keyboard.add_hotkey(hotkey, cb)
 
     def stop_hotkeys(self) -> None:
         import keyboard
+
         with contextlib.suppress(Exception):
             keyboard.unhook_all()
 
     def send(self, combo: str) -> None:
         import keyboard
+
         keyboard.send(combo)
 
 
@@ -114,8 +117,8 @@ class NoInputBackend(InputBackend):
     def send(self, combo: str) -> None:
         if not self._warned:
             logger.warning(
-                "Keyboard simulation (Ctrl+C/V) unavailable — install pynput "
-                "(pip install six pynput)"
+                'Keyboard simulation (Ctrl+C/V) unavailable — install pynput '
+                '(pip install six pynput)'
             )
             self._warned = True
 
@@ -123,9 +126,11 @@ class NoInputBackend(InputBackend):
 class PynputBackend(InputBackend):
     def __init__(self) -> None:
         from pynput.keyboard import Controller, GlobalHotKeys
+
         self._GlobalHotKeys = GlobalHotKeys
         self._controller = Controller()
         from typing import Any
+
         self._listener: Any = None
 
     def start_hotkeys(self, mapping: list[tuple[str, Callable]]) -> None:
@@ -165,32 +170,32 @@ def get_backend() -> InputBackend:
         return _backend
 
     system = platform.system()
-    linux_non_root = system == "Linux" and os.geteuid() != 0
+    linux_non_root = system == 'Linux' and os.geteuid() != 0
 
     if linux_non_root:
         try:
             _backend = PynputBackend()
-            logger.info("Linux: using pynput (hotkeys and paste without root).")
+            logger.info('Linux: using pynput (hotkeys and paste without root).')
         except Exception as e:
             _backend = NoInputBackend(str(e))
             logger.warning(
-                "Without pynput on Linux, global hotkeys are unavailable "
-                "(keyboard requires root).\n"
-                "  Reason: %s\n"
-                "  Fix:  pip install six pynput\n"
-                "  SSL workaround:\n"
-                "  pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org six pynput",
+                'Without pynput on Linux, global hotkeys are unavailable '
+                '(keyboard requires root).\n'
+                '  Reason: %s\n'
+                '  Fix:  pip install six pynput\n'
+                '  SSL workaround:\n'
+                '  pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org six pynput',
                 e,
             )
-    elif system == "Linux":
+    elif system == 'Linux':
         _backend = KeyboardLibBackend()
-        logger.info("Linux (root): using keyboard package.")
-    elif system == "Darwin":
+        logger.info('Linux (root): using keyboard package.')
+    elif system == 'Darwin':
         try:
             _backend = PynputBackend()
-            logger.info("macOS: pynput (grant Accessibility if prompted).")
+            logger.info('macOS: pynput (grant Accessibility if prompted).')
         except Exception as e:
-            logger.warning("pynput failed: %s, falling back to keyboard.", e)
+            logger.warning('pynput failed: %s, falling back to keyboard.', e)
             _backend = KeyboardLibBackend()
     else:
         _backend = KeyboardLibBackend()

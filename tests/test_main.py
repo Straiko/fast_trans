@@ -76,11 +76,15 @@ class TestTranslatorAppLoadConfig:
         from main import TranslatorApp
 
         config_path = tmp_path / 'config.json'
-        config_path.write_text(json.dumps({
-            'hotkey': 'ctrl+alt+x',
-            'target_lang': 'de',
-            'api_key': 'test-key',
-        }))
+        config_path.write_text(
+            json.dumps(
+                {
+                    'hotkey': 'ctrl+alt+x',
+                    'target_lang': 'de',
+                    'api_key': 'test-key',
+                }
+            )
+        )
 
         with patch.object(TranslatorApp, '__init__', lambda self: None):
             app = TranslatorApp.__new__(TranslatorApp)

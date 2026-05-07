@@ -22,6 +22,7 @@ def default_config():
 @pytest.fixture
 def translator(default_config):
     from translator import Translator
+
     return Translator(default_config)
 
 
@@ -48,9 +49,27 @@ class TestRecognitionLangMap:
         assert RECOGNITION_LANG_MAP['ja'] == 'ja-JP'
 
     def test_all_source_langs_covered(self):
-        source_langs = ['auto', 'ru', 'en', 'uk', 'pl', 'de', 'fr', 'es', 'it', 'pt', 'tr', 'ar', 'zh-cn', 'ja', 'ko']
+        source_langs = [
+            'auto',
+            'ru',
+            'en',
+            'uk',
+            'pl',
+            'de',
+            'fr',
+            'es',
+            'it',
+            'pt',
+            'tr',
+            'ar',
+            'zh-cn',
+            'ja',
+            'ko',
+        ]
         for lang in source_langs:
-            assert lang in RECOGNITION_LANG_MAP, f"Missing recognition mapping for source_lang: {lang}"
+            assert lang in RECOGNITION_LANG_MAP, (
+                f'Missing recognition mapping for source_lang: {lang}'
+            )
 
 
 class TestVoiceInputInit:
@@ -85,7 +104,9 @@ class TestRecordAudioSimple:
     @patch('voice_input.send_key_combo')
     @patch('voice_input.pyperclip')
     @patch('voice_input.sr')
-    def test_recognize_with_source_lang(self, mock_sr, mock_clip, mock_send, default_config, translator):
+    def test_recognize_with_source_lang(
+        self, mock_sr, mock_clip, mock_send, default_config, translator
+    ):
         default_config['source_lang'] = 'de'
         vi = VoiceInput(default_config, translator)
 
@@ -104,7 +125,10 @@ class TestRecordAudioSimple:
         mock_sr.Microphone.assert_called_once_with(device_index=0)
         mock_recognizer.recognize_google.assert_called_once()
         call_kwargs = mock_recognizer.recognize_google.call_args
-        assert call_kwargs[1].get('language') == 'de-DE' or call_kwargs.kwargs.get('language') == 'de-DE'
+        assert (
+            call_kwargs[1].get('language') == 'de-DE'
+            or call_kwargs.kwargs.get('language') == 'de-DE'
+        )
 
     @patch('voice_input.sr')
     def test_timeout_error(self, mock_sr, default_config, translator):

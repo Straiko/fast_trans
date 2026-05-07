@@ -43,8 +43,7 @@ _NAV_LABELS = ['Hotkeys', 'Translation', 'Microphone', 'AI / API']
 
 _PROVIDER_HELP: dict[str, str] = {
     'groq': (
-        'Groq — free tier. Get a key: https://console.groq.com\n'
-        'Model: llama-3.3-70b-versatile'
+        'Groq — free tier. Get a key: https://console.groq.com\nModel: llama-3.3-70b-versatile'
     ),
     'huggingface': (
         'Hugging Face — free inference token: https://huggingface.co/settings/tokens\n'
@@ -271,7 +270,23 @@ class SettingsWindow(QWidget):
 
         self.source_lang_combo = QComboBox()
         self.source_lang_combo.addItems(
-            ['auto', 'ru', 'en', 'uk', 'pl', 'de', 'fr', 'es', 'it', 'pt', 'tr', 'ar', 'zh-cn', 'ja', 'ko']
+            [
+                'auto',
+                'ru',
+                'en',
+                'uk',
+                'pl',
+                'de',
+                'fr',
+                'es',
+                'it',
+                'pt',
+                'tr',
+                'ar',
+                'zh-cn',
+                'ja',
+                'ko',
+            ]
         )
         self.source_lang_combo.setCurrentText(self.config.get('source_lang', 'auto'))
 

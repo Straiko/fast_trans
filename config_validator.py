@@ -9,8 +9,23 @@ logger = logging.getLogger(__name__)
 
 VALID_API_PROVIDERS = {'groq', 'openai', 'anthropic', 'huggingface'}
 VALID_LANGUAGES = {
-    'auto', 'ru', 'en', 'uk', 'pl', 'de', 'fr', 'es', 'it', 'pt', 'tr', 'ar',
-    'zh-cn', 'zh-tw', 'pt-br', 'ja', 'ko'
+    'auto',
+    'ru',
+    'en',
+    'uk',
+    'pl',
+    'de',
+    'fr',
+    'es',
+    'it',
+    'pt',
+    'tr',
+    'ar',
+    'zh-cn',
+    'zh-tw',
+    'pt-br',
+    'ja',
+    'ko',
 }
 
 
@@ -23,7 +38,8 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
         if provider not in VALID_API_PROVIDERS:
             logger.warning(
                 "Invalid api_provider '%s', defaulting to 'groq'. Valid: %s",
-                provider, VALID_API_PROVIDERS
+                provider,
+                VALID_API_PROVIDERS,
             )
             validated['api_provider'] = 'groq'
 
@@ -31,8 +47,7 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
         lang = validated['source_lang']
         if lang not in VALID_LANGUAGES:
             logger.warning(
-                "Invalid source_lang '%s', defaulting to 'auto'. Valid: %s",
-                lang, VALID_LANGUAGES
+                "Invalid source_lang '%s', defaulting to 'auto'. Valid: %s", lang, VALID_LANGUAGES
             )
             validated['source_lang'] = 'auto'
 
@@ -40,8 +55,7 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
         lang = validated['target_lang']
         if lang not in VALID_LANGUAGES:
             logger.warning(
-                "Invalid target_lang '%s', defaulting to 'en'. Valid: %s",
-                lang, VALID_LANGUAGES
+                "Invalid target_lang '%s', defaulting to 'en'. Valid: %s", lang, VALID_LANGUAGES
             )
             validated['target_lang'] = 'en'
 
@@ -49,12 +63,12 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
         try:
             mic_idx = int(validated['microphone_index'])
             if mic_idx < -1:
-                logger.warning("microphone_index must be >= -1, defaulting to -1")
+                logger.warning('microphone_index must be >= -1, defaulting to -1')
                 validated['microphone_index'] = -1
             else:
                 validated['microphone_index'] = mic_idx
         except (ValueError, TypeError):
-            logger.warning("Invalid microphone_index, defaulting to -1")
+            logger.warning('Invalid microphone_index, defaulting to -1')
             validated['microphone_index'] = -1
 
     for bool_key in ('auto_replace', 'ai_enhance'):

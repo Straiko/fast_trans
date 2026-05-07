@@ -37,21 +37,25 @@ class TestParseSendParts:
     def test_ctrl_c(self):
         keys = _parse_send_parts('ctrl+c')
         from pynput.keyboard import Key
+
         assert keys == [Key.ctrl, 'c']
 
     def test_ctrl_v(self):
         keys = _parse_send_parts('ctrl+v')
         from pynput.keyboard import Key
+
         assert keys == [Key.ctrl, 'v']
 
     def test_ctrl_shift_t(self):
         keys = _parse_send_parts('ctrl+shift+t')
         from pynput.keyboard import Key
+
         assert keys == [Key.ctrl, Key.shift, 't']
 
     def test_alt_tab(self):
         keys = _parse_send_parts('alt+tab')
         from pynput.keyboard import Key
+
         assert keys == [Key.alt, 'tab']
 
 
@@ -60,6 +64,7 @@ class TestNoInputBackend:
         import logging
 
         from input_backend import NoInputBackend
+
         b = NoInputBackend('test reason')
         with caplog.at_level(logging.WARNING, logger='input_backend'):
             b.send('ctrl+c')
@@ -72,6 +77,7 @@ class TestNoInputBackend:
 
     def test_start_stop_are_noop(self):
         from input_backend import NoInputBackend
+
         b = NoInputBackend('test')
         b.start_hotkeys([('ctrl+c', lambda: None)])
         b.stop_hotkeys()

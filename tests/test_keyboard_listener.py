@@ -22,6 +22,7 @@ def default_config():
 @pytest.fixture
 def translator(default_config):
     from translator import Translator
+
     return Translator(default_config)
 
 
@@ -87,8 +88,10 @@ class TestDoTranslateNoAutoReplace:
         mock_clip.paste.return_value = 'Привет мир'
         mock_clip.copy.return_value = None
 
-        with patch.object(translator, 'translate', return_value='Hello world'), \
-             patch('keyboard_listener.get_backend'):
+        with (
+            patch.object(translator, 'translate', return_value='Hello world'),
+            patch('keyboard_listener.get_backend'),
+        ):
             listener._do_translate()
 
         assert mock_clip.copy.call_args[0][0] == 'Hello world'

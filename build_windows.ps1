@@ -25,7 +25,7 @@ if (Test-Path "dist") { Remove-Item -Recurse -Force "dist" }
   --onefile `
   --noconsole `
   --name "Olympus" `
-  --icon ".\icon.png" `
+  --icon ".\icon.ico" `
   --add-data ".\icon.png;." `
   ".\main.py"
 
