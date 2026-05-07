@@ -90,11 +90,8 @@ class KeyboardLibBackend(InputBackend):
 
     def stop_hotkeys(self) -> None:
         import keyboard
-        try:
+        with contextlib.suppress(Exception):
             keyboard.unhook_all()
-        except Exception:
-            # unhook_all() on Linux without root re-raises ensure_root() — swallow it.
-            pass
 
     def send(self, combo: str) -> None:
         import keyboard
@@ -128,7 +125,8 @@ class PynputBackend(InputBackend):
         from pynput.keyboard import Controller, GlobalHotKeys
         self._GlobalHotKeys = GlobalHotKeys
         self._controller = Controller()
-        self._listener = None
+        from typing import Any
+        self._listener: Any = None
 
     def start_hotkeys(self, mapping: list[tuple[str, Callable]]) -> None:
         self.stop_hotkeys()

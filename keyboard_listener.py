@@ -19,7 +19,8 @@ class KeyboardListener:
         self.translator = translator
         self.running = False
         self.voice_input = voice_input
-        self.translation_done = None
+        from collections.abc import Callable
+        self.translation_done: Callable[[str, bool], None] | None = None
 
     def start(self) -> None:
         self.running = True

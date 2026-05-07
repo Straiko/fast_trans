@@ -72,12 +72,12 @@ def font_arabic(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
 # ---------------------------------------------------------------- helpers --
 
 
-def text_size(draw: ImageDraw.ImageDraw, text: str, f: ImageFont.FreeTypeFont) -> tuple[int, int]:
+def text_size(draw: ImageDraw.ImageDraw, text: str, f: ImageFont.FreeTypeFont) -> tuple[float, float]:
     left, t, r, b = draw.textbbox((0, 0), text, font=f)
     return r - left, b - t
 
 
-def text_offset(f: ImageFont.FreeTypeFont, text: str) -> tuple[int, int]:
+def text_offset(f: ImageFont.FreeTypeFont, text: str) -> tuple[float, float]:
     dummy = Image.new("RGBA", (1, 1))
     d = ImageDraw.Draw(dummy)
     left, t, _, _ = d.textbbox((0, 0), text, font=f)
@@ -278,7 +278,7 @@ def scene_1_hook(idx: int) -> Image.Image:
 
     icon_path = PROJECT / "icon.png"
     if icon_path.exists():
-        icon = Image.open(icon_path).convert("RGBA").resize((300, 300), Image.LANCZOS)
+        icon = Image.open(icon_path).convert("RGBA").resize((300, 300), Image.Resampling.LANCZOS)
         glow_layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
         gd = ImageDraw.Draw(glow_layer)
         gd.ellipse(
@@ -639,7 +639,7 @@ def scene_8_cta(idx: int) -> Image.Image:
 
     icon_path = PROJECT / "icon.png"
     if icon_path.exists():
-        icon = Image.open(icon_path).convert("RGBA").resize((180, 180), Image.LANCZOS)
+        icon = Image.open(icon_path).convert("RGBA").resize((180, 180), Image.Resampling.LANCZOS)
         img.alpha_composite(icon, (W // 2 - 90, 200))
 
     d = ImageDraw.Draw(img)
