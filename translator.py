@@ -5,7 +5,6 @@ Translation engine and AI text improvement.
 import hashlib
 import logging
 import time
-from functools import lru_cache
 
 import requests
 from deep_translator import GoogleTranslator as DeepGoogleTranslator

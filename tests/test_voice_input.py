@@ -1,6 +1,8 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from voice_input import VoiceInput, VoiceTranslateThread, RECOGNITION_LANG_MAP
+
+from voice_input import RECOGNITION_LANG_MAP, VoiceInput, VoiceTranslateThread
 
 
 @pytest.fixture

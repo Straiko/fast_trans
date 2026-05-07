@@ -7,12 +7,13 @@ it works under X11 without sudo. On Windows, `keyboard` is preferred.
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import os
 import platform
 import re
 from abc import ABC, abstractmethod
-from typing import Callable
+from collections.abc import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -139,10 +140,8 @@ class PynputBackend(InputBackend):
 
     def stop_hotkeys(self) -> None:
         if self._listener is not None:
-            try:
+            with contextlib.suppress(Exception):
                 self._listener.stop()
-            except Exception:
-                pass
             self._listener = None
 
     def send(self, combo: str) -> None:

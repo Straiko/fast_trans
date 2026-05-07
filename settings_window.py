@@ -16,7 +16,7 @@ import threading
 
 import requests
 import speech_recognition as sr
-from PyQt6.QtCore import QObject, Qt, QTimer, pyqtSignal, QSize
+from PyQt6.QtCore import QObject, QSize, Qt, QTimer, pyqtSignal
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,

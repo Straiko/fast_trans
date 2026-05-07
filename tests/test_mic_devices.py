@@ -15,7 +15,7 @@ def test_excludes_hdmi_and_monitor():
         'alsa_output.pci-0000_00_1f.3.hdmi-stereo.monitor',
     ]
     entries = build_mic_entries(names)
-    labels = [e.label for e in entries]
+    [e.label for e in entries]
     assert not any('hdmi' in e.tooltip.lower() for e in entries)
     assert not any('monitor' in e.tooltip.lower() for e in entries)
     assert any('pulse' in e.tooltip.lower() or 'Pulse' in e.label for e in entries)

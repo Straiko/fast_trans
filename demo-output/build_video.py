@@ -8,18 +8,12 @@ Run from project root:
 """
 
 import asyncio
-import math
-import os
-import shutil
 import subprocess
-import sys
-from dataclasses import dataclass
 from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
 import edge_tts
 import imageio_ffmpeg
-
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT.parent
@@ -79,15 +73,15 @@ def font_arabic(size: int, bold: bool = False) -> ImageFont.FreeTypeFont:
 
 
 def text_size(draw: ImageDraw.ImageDraw, text: str, f: ImageFont.FreeTypeFont) -> tuple[int, int]:
-    l, t, r, b = draw.textbbox((0, 0), text, font=f)
-    return r - l, b - t
+    left, t, r, b = draw.textbbox((0, 0), text, font=f)
+    return r - left, b - t
 
 
 def text_offset(f: ImageFont.FreeTypeFont, text: str) -> tuple[int, int]:
     dummy = Image.new("RGBA", (1, 1))
     d = ImageDraw.Draw(dummy)
-    l, t, _, _ = d.textbbox((0, 0), text, font=f)
-    return l, t
+    left, t, _, _ = d.textbbox((0, 0), text, font=f)
+    return left, t
 
 
 def centered_text(
@@ -807,7 +801,7 @@ async def main():
 
     print("[3/4] Building per-scene clips...")
     clips = []
-    for i, (png, audio, dur) in enumerate(zip(scene_pngs, audios, durations)):
+    for i, (png, audio, dur) in enumerate(zip(scene_pngs, audios, durations, strict=False)):
         clip = CLIPS_DIR / f"clip_{i+1:02d}.mp4"
         print(f"  - {clip.name}  ({dur:.2f}s)")
         render_clip(png, audio, dur, clip, 1.0, 1.06)

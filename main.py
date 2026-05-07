@@ -13,17 +13,23 @@ import sys
 import time
 from pathlib import Path
 
-from PyQt6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
-from PyQt6.QtGui import QIcon, QAction, QPixmap, QPainter, QColor, QLinearGradient, QPen
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QAction, QColor, QIcon, QLinearGradient, QPainter, QPen, QPixmap
+from PyQt6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
+from config_validator import validate_config
 from input_backend import degraded_input_mode
 from keyboard_listener import KeyboardListener
-from voice_input import VoiceInput
-from translator import Translator
 from settings_window import SettingsWindow
-from ui_theme import COLOR_ACCENT, COLOR_ACCENT_HOVER, COLOR_ICON_STROKE, apply_app_palette, APP_STYLESHEET
-from config_validator import validate_config
+from translator import Translator
+from ui_theme import (
+    APP_STYLESHEET,
+    COLOR_ACCENT,
+    COLOR_ACCENT_HOVER,
+    COLOR_ICON_STROKE,
+    apply_app_palette,
+)
+from voice_input import VoiceInput
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +115,7 @@ class TranslatorApp:
 
         if self.config_path.exists():
             try:
-                with open(self.config_path, 'r', encoding='utf-8') as f:
+                with open(self.config_path, encoding='utf-8') as f:
                     config = json.load(f)
                     if not isinstance(config, dict):
                         logger.error("Config file is not a valid JSON object, using defaults")

@@ -1,11 +1,10 @@
-import pytest
 import json
-import os
-import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from main import _resolve_config_path, _XDG_CONFIG_PATH, _LEGACY_CONFIG_PATH
+import pytest
+
+from main import _resolve_config_path
 
 
 @pytest.fixture
@@ -114,9 +113,9 @@ class TestTranslatorAppLoadConfig:
         with patch.object(TranslatorApp, '__init__', lambda self: None):
             app = TranslatorApp.__new__(TranslatorApp)
             app.config_path = Path.home() / '.config' / 'olympus' / 'config.json'
-            config = app.load_config()
+            app.load_config()
 
-        assert '/testuser/' in str(app.config_path)
+        assert 'testuser' in str(app.config_path)
 
 
 class TestTranslatorAppSaveConfig:

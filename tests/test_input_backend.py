@@ -1,4 +1,3 @@
-import pytest
 from input_backend import _normalize_hotkey_for_pynput, _parse_send_parts
 
 
@@ -59,6 +58,7 @@ class TestParseSendParts:
 class TestNoInputBackend:
     def test_send_prints_warning_once(self, caplog):
         import logging
+
         from input_backend import NoInputBackend
         b = NoInputBackend('test reason')
         with caplog.at_level(logging.WARNING, logger='input_backend'):

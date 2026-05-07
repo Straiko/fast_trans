@@ -1,6 +1,8 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from translator import Translator, LANG_MAP
+
+from translator import LANG_MAP, Translator
 
 
 @pytest.fixture
@@ -178,8 +180,8 @@ class TestCallChatApi:
         assert result == 'bonjour'
 
     def test_unknown_extract_raises(self, translator):
-        with pytest.raises(ValueError, match='Unknown extract mode'):
-            with patch('translator.requests.post') as mock_post:
+        with pytest.raises(ValueError, match='Unknown extract mode'), \
+             patch('translator.requests.post') as mock_post:
                 mock_resp = MagicMock()
                 mock_resp.json.return_value = {}
                 mock_resp.raise_for_status = MagicMock()
