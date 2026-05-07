@@ -27,3 +27,11 @@ htmlcov/
 
 *.tar.gz
 package-lock.json
+
+# AI and Environment Files
+.agents/
+.claude/
+claude-env.sh
+skills-lock.json
+cursor_skills_index.txt
+.gemini/
