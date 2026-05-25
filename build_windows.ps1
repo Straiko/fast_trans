@@ -27,6 +27,9 @@ if (Test-Path "dist") { Remove-Item -Recurse -Force "dist" }
   --name "Olympus" `
   --icon ".\icon.ico" `
   --add-data ".\icon.png;." `
+  --hidden-import="pynput.keyboard._win32" `
+  --hidden-import="pynput.mouse._win32" `
+  --hidden-import="pyperclip" `
   ".\main.py"
 
 Write-Host ""
