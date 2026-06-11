@@ -3,717 +3,337 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Olympus — Text & Voice Translator with AI Enhancement</title>
-    <meta name="description" content="A premium desktop translator for instant hotkey translation and voice input, supercharged by AI.">
-    <!-- Google Fonts: Outfit for headers, Inter for UI/Body -->
+    <title>Olympus — AI Text & Voice Translator</title>
+    <meta name="description" content="Premium desktop translator with instant hotkey translation, voice input, and AI enhancement.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #05060b;
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --card-border: rgba(255, 255, 255, 0.07);
-            --card-border-hover: rgba(99, 102, 241, 0.4);
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --accent-primary: #6366f1;
-            --accent-secondary: #06b6d4;
-            --accent-gradient: linear-gradient(135deg, #6366f1 0%, #06b6d4 100%);
-            --glow-color: rgba(99, 102, 241, 0.15);
+            --bg: #09090b;
+            --bg-card: rgba(255,255,255,0.03);
+            --border: rgba(255,255,255,0.08);
+            --text: #fafafa;
+            --text-dim: #a1a1aa;
+            --accent: #6366f1;
+            --accent2: #06b6d4;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             overflow-x: hidden;
-            position: relative;
         }
 
-        /* Abstract ambient glows in background */
-        body::before {
-            content: '';
-            position: absolute;
-            top: -200px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 800px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, rgba(6, 182, 212, 0.03) 50%, transparent 100%);
-            z-index: -1;
-            pointer-events: none;
-            filter: blur(100px);
+        /* Header */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(9,9,11,0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 40px;
+            height: 64px;
+            display: flex; align-items: center; justify-content: space-between;
         }
-
-        body::after {
-            content: '';
-            position: absolute;
-            bottom: 10%;
-            right: 5%;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(6, 182, 212, 0.05) 0%, transparent 80%);
-            z-index: -1;
-            pointer-events: none;
-            filter: blur(80px);
+        .nav-logo {
+            font-size: 20px; font-weight: 600; color: var(--text);
+            display: flex; align-items: center; gap: 10px; text-decoration: none;
         }
-
-        .header {
-            background: rgba(5, 6, 11, 0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--card-border);
-            padding: 20px 40px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+        .nav-logo span {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
         }
-
-        .header-content {
-            max-width: 1100px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        .nav-links { display: flex; gap: 32px; }
+        .nav-links a {
+            color: var(--text-dim); text-decoration: none; font-size: 14px;
+            font-weight: 500; transition: color 0.2s;
         }
+        .nav-links a:hover { color: var(--text); }
 
-        .logo {
-            font-family: 'Outfit', sans-serif;
-            font-size: 22px;
-            font-weight: 600;
-            color: var(--text-primary);
-            text-decoration: none;
-            letter-spacing: -0.02em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .logo-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--accent-gradient);
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 12px var(--accent-primary);
-        }
-
-        .github-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .github-link:hover {
-            color: var(--text-primary);
-            transform: translateX(3px);
-        }
-
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 80px 24px 120px 24px;
-        }
-
-        /* Hero Section */
+        /* Hero */
         .hero {
+            padding: 160px 40px 100px;
             text-align: center;
-            margin-bottom: 80px;
-            animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            max-width: 900px; margin: 0 auto;
         }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.2);
+            padding: 6px 16px; border-radius: 50px; font-size: 13px;
+            color: var(--accent); font-weight: 500; margin-bottom: 32px;
         }
-
-        h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 72px;
-            font-weight: 700;
-            letter-spacing: -0.03em;
-            margin-bottom: 20px;
-            background: linear-gradient(180deg, #ffffff 0%, #cbd5e1 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .hero h1 {
+            font-size: 64px; font-weight: 700; letter-spacing: -0.03em;
+            line-height: 1.1; margin-bottom: 24px;
+            background: linear-gradient(180deg, #fff 30%, #71717a 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
+        .hero p {
+            font-size: 18px; color: var(--text-dim); max-width: 560px;
+            margin: 0 auto 48px; line-height: 1.6;
+        }
+        .hero-buttons { display: flex; gap: 16px; justify-content: center; }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff; padding: 14px 32px; border-radius: 50px;
+            text-decoration: none; font-size: 15px; font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(99,102,241,0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99,102,241,0.4);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            color: var(--text); padding: 14px 32px; border-radius: 50px;
+            text-decoration: none; font-size: 15px; font-weight: 500;
+            transition: background 0.2s;
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.08); }
 
-        .subtitle {
-            font-size: 20px;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto 48px auto;
-            font-weight: 300;
+        /* Terminal */
+        .terminal {
+            max-width: 640px; margin: 0 auto 120px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px; overflow: hidden;
+        }
+        .terminal-bar {
+            display: flex; gap: 6px; padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        .terminal-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .terminal-dot.r { background: #ef4444; }
+        .terminal-dot.y { background: #f59e0b; }
+        .terminal-dot.g { background: #22c55e; }
+        .terminal-body {
+            padding: 20px 24px; font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 14px; color: var(--text-dim); line-height: 1.8;
+        }
+        .terminal-body .cmd { color: var(--accent2); }
+        .terminal-body .prompt { color: var(--text-dim); }
+        .copy-btn {
+            float: right; background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border); color: var(--text-dim);
+            padding: 4px 12px; border-radius: 6px; cursor: pointer;
+            font-size: 12px; transition: all 0.2s;
+        }
+        .copy-btn:hover { background: rgba(255,255,255,0.1); color: var(--text); }
+
+        /* Features */
+        .features {
+            max-width: 1100px; margin: 0 auto; padding: 0 40px 120px;
+        }
+        .section-title {
+            text-align: center; font-size: 40px; font-weight: 700;
+            letter-spacing: -0.02em; margin-bottom: 16px;
+        }
+        .section-sub {
+            text-align: center; color: var(--text-dim); font-size: 16px;
+            margin-bottom: 64px; max-width: 500px; margin-left: auto; margin-right: auto;
+        }
+        .feature-row {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 60px; align-items: center; margin-bottom: 100px;
+        }
+        .feature-row.reverse { direction: rtl; }
+        .feature-row.reverse > * { direction: ltr; }
+        .feature-text h3 {
+            font-size: 28px; font-weight: 600; margin-bottom: 16px;
             letter-spacing: -0.01em;
         }
-
-        .download-section {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
+        .feature-text p {
+            color: var(--text-dim); font-size: 15px; line-height: 1.7;
         }
-
-        .download-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--accent-gradient);
-            color: #ffffff;
-            padding: 16px 36px;
-            font-size: 15px;
-            font-weight: 500;
-            text-decoration: none;
-            border-radius: 50px;
-            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            border: none;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .download-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #06b6d4 0%, #6366f1 100%);
-            opacity: 0;
-            transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 1;
-        }
-
-        .download-btn span {
-            position: relative;
-            z-index: 2;
-        }
-
-        .download-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.4);
-        }
-
-        .download-btn:hover::before {
-            opacity: 1;
-        }
-
-        .secondary-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.03);
-            color: var(--text-primary);
-            padding: 16px 36px;
-            font-size: 15px;
-            font-weight: 500;
-            text-decoration: none;
-            border-radius: 50px;
-            border: 1px solid var(--card-border);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .secondary-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        /* Features Section */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            margin-bottom: 80px;
-            animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
-            opacity: 0;
-        }
-
-        .feature-card {
-            background: var(--card-bg);
-            border: 1px solid var(--card-border);
-            border-radius: 20px;
-            padding: 32px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .feature-card:hover {
-            border-color: var(--card-border-hover);
-            background: rgba(255, 255, 255, 0.05);
-            transform: translateY(-4px);
-            box-shadow: 0 10px 30px var(--glow-color);
-        }
-
-        .feature-icon-wrapper {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: rgba(99, 102, 241, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 24px;
-            color: var(--accent-primary);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .feature-card:hover .feature-icon-wrapper {
-            background: var(--accent-gradient);
-            color: #ffffff;
-            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
-        }
-
-        .feature-title {
-            font-family: 'Outfit', sans-serif;
-            font-size: 20px;
-            font-weight: 500;
-            margin-bottom: 12px;
-            color: var(--text-primary);
-        }
-
-        .feature-desc {
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        /* Simulated Demo Section */
-        .demo-section {
-            background: linear-gradient(180deg, rgba(255,255,255,0.01) 0%, rgba(255,255,255,0.03) 100%);
-            border: 1px solid var(--card-border);
-            border-radius: 24px;
-            padding: 48px;
-            margin-bottom: 80px;
-            animation: fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
-            opacity: 0;
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
-        }
-
-        .demo-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            align-items: center;
-        }
-
-        .demo-info h2 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 32px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            letter-spacing: -0.02em;
-        }
-
-        .demo-info p {
-            color: var(--text-secondary);
-            font-size: 16px;
-            line-height: 1.6;
-            margin-bottom: 24px;
-        }
-
-        /* Mockup of Application Window */
-        .window-mockup {
-            background: #0f111a;
-            border: 1px solid var(--card-border);
+        .feature-visual {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
             border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 32px;
+            aspect-ratio: 4/3;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
         }
-
-        .window-header {
-            background: #151825;
-            border-bottom: 1px solid var(--card-border);
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+        .feature-visual::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(99,102,241,0.08), transparent 60%);
         }
-
-        .window-dots {
-            display: flex;
-            gap: 6px;
+        .feature-icon {
+            width: 80px; height: 80px; border-radius: 20px;
+            background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(6,182,212,0.15));
+            display: flex; align-items: center; justify-content: center;
+            position: relative; z-index: 1;
         }
+        .feature-icon svg { width: 36px; height: 36px; stroke: var(--accent); fill: none; stroke-width: 1.5; }
 
-        .window-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
+        /* Grid Features */
+        .feature-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 24px; margin-top: 64px;
         }
-
-        .window-dot.red { background: #ef4444; }
-        .window-dot.yellow { background: #f59e0b; }
-        .window-dot.green { background: #10b981; }
-
-        .window-title {
-            font-size: 11px;
-            color: var(--text-secondary);
-            font-weight: 500;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
+        .grid-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px; padding: 32px;
+            transition: border-color 0.3s, transform 0.3s;
         }
-
-        .window-body {
-            padding: 24px;
-            min-height: 220px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+        .grid-card:hover {
+            border-color: rgba(99,102,241,0.3);
+            transform: translateY(-4px);
         }
-
-        .demo-input-box {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--card-border);
-            border-radius: 10px;
-            padding: 16px;
-            min-height: 80px;
-            color: var(--text-secondary);
-            font-size: 14px;
-            position: relative;
-            outline: none;
-            transition: border-color 0.3s;
+        .grid-card-icon {
+            width: 44px; height: 44px; border-radius: 10px;
+            background: rgba(99,102,241,0.1);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 20px;
         }
+        .grid-card-icon svg { width: 20px; height: 20px; stroke: var(--accent); fill: none; stroke-width: 1.5; }
+        .grid-card h4 { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+        .grid-card p { font-size: 13px; color: var(--text-dim); line-height: 1.6; }
 
-        .demo-input-box:focus {
-            border-color: rgba(99, 102, 241, 0.4);
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px;
+            display: flex; align-items: center; justify-content: space-between;
+            color: var(--text-dim); font-size: 13px;
         }
-
-        .demo-result-box {
-            background: rgba(99, 102, 241, 0.05);
-            border: 1px dashed rgba(99, 102, 241, 0.2);
-            border-radius: 10px;
-            padding: 16px;
-            min-height: 80px;
-            margin-top: 16px;
-            position: relative;
-            opacity: 0;
-            transform: translateY(10px);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .demo-result-box.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .demo-result-label {
-            font-size: 10px;
-            color: var(--accent-primary);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .ai-badge {
-            background: var(--accent-gradient);
-            color: #ffffff;
-            font-size: 9px;
-            padding: 2px 6px;
-            border-radius: 20px;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-        }
-
-        .demo-result-text {
-            font-size: 14px;
-            color: var(--text-primary);
-        }
-
-        .demo-translate-btn {
-            background: var(--accent-gradient);
-            border: none;
-            color: #ffffff;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: 500;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 16px;
-            align-self: flex-end;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.3s;
-        }
-
-        .demo-translate-btn:hover {
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
-            transform: translateY(-1px);
-        }
-
-        /* Footer Section */
-        .footer {
-            margin-top: 80px;
-            padding-top: 40px;
-            border-top: 1px solid var(--card-border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: var(--text-secondary);
-            font-size: 13px;
-        }
-
-        .footer-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .footer-right {
-            display: flex;
-            gap: 20px;
-        }
-
-        .footer-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .footer-link:hover {
-            color: var(--text-primary);
-        }
+        footer a { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+        footer a:hover { color: var(--text); }
+        .footer-right { display: flex; gap: 24px; }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 40px 20px 80px 20px;
-            }
-
-            h1 {
-                font-size: 48px;
-            }
-
-            .subtitle {
-                font-size: 16px;
-                margin-bottom: 32px;
-            }
-
-            .download-section {
-                flex-direction: column;
-                gap: 12px;
-            }
-
-            .download-btn,
-            .secondary-btn {
-                width: 100%;
-            }
-
-            .demo-grid {
-                grid-template-columns: 1fr;
-                gap: 32px;
-            }
-
-            .demo-section {
-                padding: 24px;
-            }
-
-            .footer {
-                flex-direction: column;
-                gap: 16px;
-                align-items: center;
-                text-align: center;
-            }
+            .hero h1 { font-size: 40px; }
+            .hero { padding: 120px 20px 60px; }
+            .feature-row { grid-template-columns: 1fr; gap: 32px; }
+            .feature-row.reverse { direction: ltr; }
+            .feature-grid { grid-template-columns: 1fr; }
+            .nav-links { display: none; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            footer { flex-direction: column; gap: 16px; text-align: center; }
         }
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="header-content">
-            <a href="#" class="logo">
-                <span class="logo-dot"></span>Olympus
-            </a>
-            <a href="https://github.com/Straiko/fast_trans" class="github-link">
-                GitHub
-                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-top: 1px;">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                </svg>
-            </a>
-        </div>
-    </header>
 
-    <div class="container">
-        <!-- Hero Section -->
-        <div class="hero">
-            <h1>Olympus</h1>
-            <p class="subtitle">An elegant desktop translator with global hotkey capture, voice-to-text, and state-of-the-art AI enhancement.</p>
-            
-            <div class="download-section">
-                <a href="https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus" class="download-btn">
-                    <span>Download Olympus</span>
-                </a>
-                <a href="https://github.com/Straiko/fast_trans" class="secondary-btn">
-                    View on GitHub
-                </a>
-            </div>
-        </div>
+<nav>
+    <a href="#" class="nav-logo"><span></span>Olympus</a>
+    <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="https://github.com/Straiko/fast_trans/releases">Downloads</a>
+        <a href="https://github.com/Straiko/fast_trans">GitHub</a>
+    </div>
+</nav>
 
-        <!-- Simulated Interactive Demo Section -->
-        <div class="demo-section">
-            <div class="demo-grid">
-                <div class="demo-info">
-                    <h2>Experience AI Translation</h2>
-                    <p>Olympus goes beyond literal dictionary replacements. It parses contextual nuances and optimizes text flows to sound completely natural in the target language.</p>
-                    <p style="font-size: 14px; opacity: 0.8;">Feel free to modify the Russian text in the mockup box to try a custom translation.</p>
-                </div>
-                
-                <div class="window-mockup">
-                    <div class="window-header">
-                        <div class="window-dots">
-                            <span class="window-dot red"></span>
-                            <span class="window-dot yellow"></span>
-                            <span class="window-dot green"></span>
-                        </div>
-                        <div class="window-title">AI Translator Mockup</div>
-                        <div style="width: 36px;"></div>
-                    </div>
-                    <div class="window-body">
-                        <div class="demo-input-box" contenteditable="true" id="demo-input">Привет! Как дела? Этот текст будет мгновенно переведен с помощью нейросети и улучшен ИИ.</div>
-                        
-                        <div class="demo-result-box" id="demo-result">
-                            <div class="demo-result-label">
-                                Translation
-                                <span class="ai-badge">AI Optimized</span>
-                            </div>
-                            <div class="demo-result-text" id="demo-result-text">Hi! How are you doing? This text will be instantly translated using a neural network and optimized by AI.</div>
-                        </div>
-                        
-                        <button class="demo-translate-btn" id="demo-translate-btn">
-                            Translate with AI
-                            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
+<section class="hero">
+    <div class="hero-badge">New — v1.0 Available</div>
+    <h1>AI-Powered Desktop Translator</h1>
+    <p>Instant hotkey translation, voice-to-text, and neural AI enhancement. Select text anywhere, press a key, get a perfect translation.</p>
+    <div class="hero-buttons">
+        <a href="https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus" class="btn-primary">Download for Windows</a>
+        <a href="https://github.com/Straiko/fast_trans" class="btn-secondary">View Source</a>
+    </div>
+</section>
+
+<div class="terminal">
+    <div class="terminal-bar">
+        <span class="terminal-dot r"></span>
+        <span class="terminal-dot y"></span>
+        <span class="terminal-dot g"></span>
+    </div>
+    <div class="terminal-body">
+        <span class="prompt">$</span> <span class="cmd">git clone</span> https://github.com/Straiko/fast_trans.git<br>
+        <span class="prompt">$</span> <span class="cmd">cd</span> fast_trans<br>
+        <span class="prompt">$</span> <span class="cmd">pip install</span> -r requirements.txt<br>
+        <span class="prompt">$</span> <span class="cmd">python</span> main.py<br>
+        <span style="color:#22c55e">✓ Olympus Translator started</span>
+    </div>
+</div>
+
+<section class="features" id="features">
+    <h2 class="section-title">Why Olympus</h2>
+    <p class="section-sub">Built for speed, designed for precision. Every feature crafted for seamless translation workflow.</p>
+
+    <div class="feature-row">
+        <div class="feature-text">
+            <h3>Instant Hotkey Translation</h3>
+            <p>Select text in any application, press your custom shortcut, and Olympus copies, translates, and pastes the result back — all in under a second. No context switching, no extra clicks.</p>
+        </div>
+        <div class="feature-visual">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             </div>
         </div>
-
-        <!-- Features Grid -->
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon-wrapper">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Instant Hotkeys</h3>
-                <p class="feature-desc">Select text inside any desktop application, tap your custom shortcut, and let Olympus handle copy, translation, and auto-paste natively.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon-wrapper">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
-                    </svg>
-                </div>
-                <h3 class="feature-title">Voice Recording</h3>
-                <p class="feature-desc">Translate speech on the fly. Hold down your voice hotkey, speak into your microphone, and instantly paste the text translation at your cursor.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon-wrapper">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                    </svg>
-                </div>
-                <h3 class="feature-title">AI Optimizations</h3>
-                <p class="feature-desc">Leverage integrated models from Groq, Anthropic, OpenAI, or Hugging Face to proofread, fix audio errors, and enhance structural clarity.</p>
-            </div>
-        </div>
-
-        <!-- Footer Section -->
-        <footer class="footer">
-            <div class="footer-left">
-                <span class="logo-dot" style="width:6px; height:6px;"></span>
-                <span>Olympus Translator Project</span>
-            </div>
-            <div class="footer-right">
-                <a href="https://github.com/Straiko/fast_trans" class="footer-link">Documentation</a>
-                <a href="https://github.com/Straiko/fast_trans/releases" class="footer-link">Releases</a>
-            </div>
-        </footer>
     </div>
 
-    <!-- Script for Interactive Demo -->
-    <script>
-        const translateBtn = document.getElementById('demo-translate-btn');
-        const inputContainer = document.getElementById('demo-input');
-        const resultContainer = document.getElementById('demo-result');
-        const resultText = document.getElementById('demo-result-text');
+    <div class="feature-row reverse">
+        <div class="feature-text">
+            <h3>Voice-to-Text Translation</h3>
+            <p>Hold the voice hotkey, speak naturally, and watch your words appear as translated text at your cursor. Powered by Whisper for 99+ languages with zero setup.</p>
+        </div>
+        <div class="feature-visual">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24"><path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
+            </div>
+        </div>
+    </div>
 
-        // Hand-crafted high-quality translations for demonstration
-        const mockDatabase = {
-            "привет! как дела? этот текст будет мгновенно переведен с помощью нейросети и улучшен ии.": 
-                "Hi! How is it going? This text will be instantly translated using a neural network and optimized by AI.",
-            "привет! как дела?": 
-                "Hello! How are you doing?",
-            "этот проект отличный": 
-                "This project is absolutely outstanding.",
-            "спасибо за помощь": 
-                "Thank you very much for your kind assistance!"
-        };
+    <div class="feature-row">
+        <div class="feature-text">
+            <h3>Neural AI Enhancement</h3>
+            <p>Beyond literal translation. Olympus uses Groq, Claude, or GPT to fix grammar, adapt tone, and make your text sound native — whether it's formal docs or casual chat.</p>
+        </div>
+        <div class="feature-visual">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            </div>
+        </div>
+    </div>
 
-        const defaultTranslation = "Here is your translation. Olympus has parsed your custom input and processed it dynamically!";
+    <div class="feature-grid">
+        <div class="grid-card">
+            <div class="grid-card-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            </div>
+            <h4>Privacy First</h4>
+            <p>All translations happen locally. Your text never leaves your machine unless you choose a cloud AI provider.</p>
+        </div>
+        <div class="grid-card">
+            <div class="grid-card-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+            </div>
+            <h4>100+ Languages</h4>
+            <p>Translate between any of 100+ languages with automatic detection. Cyrillic, CJK, Arabic — all supported.</p>
+        </div>
+        <div class="grid-card">
+            <div class="grid-card-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6z"/></svg>
+            </div>
+            <h4>Custom Themes</h4>
+            <p>Switch between light, dark, and AMOLED themes. Adjust fonts, colors, and layout to match your workflow.</p>
+        </div>
+        <div class="grid-card">
+            <div class="grid-card-icon">
+                <svg viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <h4>Multi-Provider AI</h4>
+            <p>Switch between Groq, Claude, GPT, and HuggingFace. Use free tiers or your own API keys.</p>
+        </div>
+    </div>
+</section>
 
-        translateBtn.addEventListener('click', () => {
-            const rawText = inputContainer.innerText.trim();
-            const normalizedText = rawText.toLowerCase().replace(/[\s\.\?!,]+/g, ' ').trim();
-            
-            // Shimmer effect
-            translateBtn.style.opacity = '0.7';
-            translateBtn.innerText = 'Processing...';
-            resultContainer.classList.remove('active');
+<footer>
+    <div>Olympus Translator</div>
+    <div class="footer-right">
+        <a href="https://github.com/Straiko/fast_trans">GitHub</a>
+        <a href="https://github.com/Straiko/fast_trans/releases">Releases</a>
+        <a href="https://github.com/Straiko/fast_trans/blob/main/README.md">Docs</a>
+    </div>
+</footer>
 
-            setTimeout(() => {
-                let translation = defaultTranslation;
-                
-                // Check database or generate simple simulated translation
-                for (const key in mockDatabase) {
-                    if (normalizedText.includes(key.replace(/[\s\.\?!,]+/g, ' ').trim())) {
-                        translation = mockDatabase[key];
-                        break;
-                    }
-                }
-                
-                if (translation === defaultTranslation && rawText.length > 0) {
-                    // Try simple fallback translator mock
-                    if (rawText.match(/[а-яА-Я]/)) {
-                        translation = `Translated: "Excellent choice! Your custom phrase was captured, processed by our mock LLM agent, and rendered with pristine layout."`;
-                    } else {
-                        translation = `Translation: "Отличный выбор! Ваша фраза на английском была обработана и аккуратно отображена на панели перевода."`;
-                    }
-                }
-
-                resultText.innerText = translation;
-                resultContainer.classList.add('active');
-                
-                translateBtn.style.opacity = '1';
-                translateBtn.innerHTML = 'Translate with AI <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>';
-            }, 800);
-        });
-    </script>
 </body>
 </html>
