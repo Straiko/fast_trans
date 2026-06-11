@@ -170,6 +170,98 @@
         }
         .feature-icon svg { width: 36px; height: 36px; stroke: var(--accent); fill: none; stroke-width: 1.5; }
 
+        /* Demo Section */
+        .demo-section {
+            max-width: 1100px; margin: 0 auto 120px; padding: 0 40px;
+        }
+        .demo-wrapper {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px; padding: 48px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+            align-items: center;
+        }
+        .demo-info h2 {
+            font-size: 36px; font-weight: 700; margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+        .demo-info p {
+            color: var(--text-dim); font-size: 15px; line-height: 1.7;
+            margin-bottom: 12px;
+        }
+        .demo-window {
+            background: #0f111a;
+            border: 1px solid var(--border);
+            border-radius: 14px; overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .demo-window-bar {
+            background: #161825; border-bottom: 1px solid var(--border);
+            padding: 10px 14px; display: flex;
+            align-items: center; justify-content: space-between;
+        }
+        .demo-dots { display: flex; gap: 6px; }
+        .demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .demo-dot.r { background: #ef4444; }
+        .demo-dot.y { background: #f59e0b; }
+        .demo-dot.g { background: #22c55e; }
+        .demo-window-title {
+            font-size: 11px; color: var(--text-dim);
+            font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .demo-window-body { padding: 20px; }
+        .demo-input {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px; padding: 16px;
+            min-height: 100px; color: var(--text-dim);
+            font-size: 14px; line-height: 1.6;
+            outline: none; transition: border-color 0.3s;
+            resize: none; width: 100%; font-family: inherit;
+        }
+        .demo-input:focus { border-color: rgba(99,102,241,0.4); }
+        .demo-result {
+            background: rgba(99,102,241,0.05);
+            border: 1px dashed rgba(99,102,241,0.2);
+            border-radius: 10px; padding: 16px;
+            margin-top: 14px; opacity: 0;
+            transform: translateY(8px);
+            transition: all 0.4s cubic-bezier(0.16,1,0.3,1);
+        }
+        .demo-result.active { opacity: 1; transform: translateY(0); }
+        .demo-result-label {
+            font-size: 10px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.06em; color: var(--accent);
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 8px;
+        }
+        .ai-badge {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff; font-size: 9px; padding: 2px 8px;
+            border-radius: 20px; font-weight: 700;
+        }
+        .demo-result-text {
+            font-size: 14px; color: var(--text); line-height: 1.6;
+        }
+        .demo-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            border: none; color: #fff; padding: 10px 20px;
+            border-radius: 8px; cursor: pointer; font-size: 13px;
+            font-weight: 600; margin-top: 14px; float: right;
+            display: flex; align-items: center; gap: 6px;
+            transition: all 0.2s;
+        }
+        .demo-btn:hover {
+            box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+            transform: translateY(-1px);
+        }
+        .demo-btn svg { width: 12px; height: 12px; stroke: #fff; fill: none; stroke-width: 2.5; }
+
+        @media (max-width: 768px) {
+            .demo-wrapper { grid-template-columns: 1fr; padding: 24px; }
+        }
+
         /* Grid Features */
         .feature-grid {
             display: grid; grid-template-columns: repeat(3, 1fr);
@@ -254,6 +346,35 @@
     </div>
 </div>
 
+<section class="demo-section">
+    <div class="demo-wrapper">
+        <div class="demo-info">
+            <h2>Experience AI Translation</h2>
+            <p>Olympus goes beyond literal dictionary replacements. It parses contextual nuances and optimizes text flows to sound completely natural in the target language.</p>
+            <p style="font-size:13px; opacity:0.7;">Feel free to modify the Russian text in the box to try a custom translation.</p>
+        </div>
+        <div class="demo-window">
+            <div class="demo-window-bar">
+                <div class="demo-dots">
+                    <span class="demo-dot r"></span>
+                    <span class="demo-dot y"></span>
+                    <span class="demo-dot g"></span>
+                </div>
+                <div class="demo-window-title">AI Translator Mockup</div>
+                <div style="width:36px"></div>
+            </div>
+            <div class="demo-window-body">
+                <textarea class="demo-input" id="demoInput">Привет! Как дела? Этот текст будет мгновенно переведен с помощью нейросети и улучшен ИИ.</textarea>
+                <div class="demo-result" id="demoResult">
+                    <div class="demo-result-label">Translation <span class="ai-badge">AI Optimized</span></div>
+                    <div class="demo-result-text" id="demoResultText"></div>
+                </div>
+                <button class="demo-btn" id="demoBtn">Translate with AI <svg viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg></button>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="features" id="features">
     <h2 class="section-title">Why Olympus</h2>
     <p class="section-sub">Built for speed, designed for precision. Every feature crafted for seamless translation workflow.</p>
@@ -334,6 +455,38 @@
         <a href="https://github.com/Straiko/fast_trans/blob/main/README.md">Docs</a>
     </div>
 </footer>
+
+<script>
+const demoBtn = document.getElementById('demoBtn');
+const demoInput = document.getElementById('demoInput');
+const demoResult = document.getElementById('demoResult');
+const demoResultText = document.getElementById('demoResultText');
+
+const translations = {
+    "привет! как дела? этот текст будет мгновенно переведен с помощью нейросети и улучшен ии.":
+        "Hi! How is it going? This text will be instantly translated using a neural network and optimized by AI.",
+    "привет! как дела?": "Hello! How are you doing?",
+    "этот проект отличный": "This project is absolutely outstanding!",
+    "спасибо за помощь": "Thank you very much for your kind assistance!"
+};
+
+demoBtn.addEventListener('click', () => {
+    const text = demoInput.value.trim().toLowerCase().replace(/[^\w\s\u0400-\u04FF]/g, '');
+    demoBtn.textContent = 'Processing...';
+    demoResult.classList.remove('active');
+
+    setTimeout(() => {
+        let result = translations[text] || (
+            /[а-яА-Я]/.test(demoInput.value)
+                ? `Translated: "Excellent choice! Your phrase was captured, processed by our neural agent, and rendered with perfect layout."`
+                : `Перевод: "Отличный выбор! Ваша фраза была обработана аккуратно и отображена на панели перевода."`
+        );
+        demoResultText.textContent = result;
+        demoResult.classList.add('active');
+        demoBtn.innerHTML = 'Translate with AI <svg viewBox="0 0 24 24"><path d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>';
+    }, 800);
+});
+</script>
 
 </body>
 </html>
