@@ -81,41 +81,54 @@ class TestDoTranslateAutoReplace:
 
 
 class TestDoTranslateNoAutoReplace:
+    @patch('keyboard_listener.get_backend')
     @patch('keyboard_listener.pyperclip')
-    def test_translate_from_clipboard(self, mock_clip, listener, translator):
+    def test_translate_from_selection(self, mock_clip, mock_backend_cls, listener, translator):
+        """Even with auto_replace=False, the selected text is auto-captured via Ctrl+C."""
         listener.config['auto_replace'] = False
+        mock_backend = MagicMock()
+        mock_backend_cls.return_value = mock_backend
 
-        mock_clip.paste.return_value = 'Привет мир'
+        # paste() returns: clipboard_before, then selected text after Ctrl+C
+        mock_clip.paste.side_effect = ['old', 'Привет мир']
         mock_clip.copy.return_value = None
 
-        with (
-            patch.object(translator, 'translate', return_value='Hello world'),
-            patch('keyboard_listener.get_backend'),
-        ):
+        with patch.object(translator, 'translate', return_value='Hello world'):
             listener._do_translate()
 
+        # Ctrl+C was sent to capture selection
+        mock_backend.send.assert_any_call('ctrl+c')
+        # Translation copied to clipboard
         assert mock_clip.copy.call_args[0][0] == 'Hello world'
+        # Ctrl+V was NOT sent (auto_replace=False)
+        assert all(c[0][0] != 'ctrl+v' for c in mock_backend.send.call_args_list)
 
+    @patch('keyboard_listener.get_backend')
     @patch('keyboard_listener.pyperclip')
-    def test_empty_clipboard_returns(self, mock_clip, listener):
+    def test_empty_selection_returns(self, mock_clip, mock_backend_cls, listener):
         listener.config['auto_replace'] = False
-        mock_clip.paste.return_value = ''
+        mock_backend_cls.return_value = MagicMock()
+        mock_clip.paste.side_effect = ['', '']
 
         listener._do_translate()
 
+    @patch('keyboard_listener.get_backend')
     @patch('keyboard_listener.pyperclip')
-    def test_whitespace_clipboard_returns(self, mock_clip, listener):
+    def test_whitespace_selection_returns(self, mock_clip, mock_backend_cls, listener):
         listener.config['auto_replace'] = False
-        mock_clip.paste.return_value = '   '
+        mock_backend_cls.return_value = MagicMock()
+        mock_clip.paste.side_effect = ['   ', '   ']
 
         listener._do_translate()
 
 
 class TestDoTranslateError:
+    @patch('keyboard_listener.get_backend')
     @patch('keyboard_listener.pyperclip')
-    def test_exception_handled(self, mock_clip, listener, translator):
+    def test_exception_handled(self, mock_clip, mock_backend_cls, listener, translator):
         listener.config['auto_replace'] = False
-        mock_clip.paste.return_value = 'text'
+        mock_backend_cls.return_value = MagicMock()
+        mock_clip.paste.side_effect = ['old', 'text']
 
         with patch.object(translator, 'translate', side_effect=RuntimeError('fail')):
             listener._do_translate()

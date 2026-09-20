@@ -16,12 +16,43 @@ short labels + full raw name in tooltip, stable JSON config (index or -1).
 
 from __future__ import annotations
 
+import contextlib
+import os
 import re
+import sys
 from dataclasses import dataclass
 from typing import Final, Literal
 
 # Use -1 in config.json for “follow the OS default input device”.
 SYSTEM_DEFAULT_INDEX: Final = -1
+
+
+@contextlib.contextmanager
+def suppress_c_stderr():
+    """Temporarily redirect C-level stderr (file descriptor 2) to devnull.
+
+    Suppresses noisy ALSA and JACK error messages emitted by PortAudio/PyAudio
+    during device enumeration and initialization on Linux.
+    """
+    try:
+        stderr_fd = sys.stderr.fileno()
+    except Exception:
+        yield
+        return
+
+    try:
+        saved_stderr = os.dup(stderr_fd)
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, stderr_fd)
+        os.close(devnull)
+        try:
+            yield
+        finally:
+            os.dup2(saved_stderr, stderr_fd)
+            os.close(saved_stderr)
+    except Exception:
+        yield
+
 
 _EXCLUDE_SUBSTRINGS: tuple[str, ...] = (
     'hdmi',

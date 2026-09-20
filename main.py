@@ -13,12 +13,16 @@ import sys
 import time
 from pathlib import Path
 
-from PyQt6.QtCore import Qt
+import platform
+
+from app_logging import configure as configure_logging
+
+from PyQt6.QtCore import QObject, Qt, pyqtSignal
 from PyQt6.QtGui import QAction, QColor, QIcon, QLinearGradient, QPainter, QPen, QPixmap
 from PyQt6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
 from config_validator import validate_config
-from input_backend import degraded_input_mode
+from input_backend import degraded_input_mode, is_wayland
 from keyboard_listener import KeyboardListener
 from settings_window import SettingsWindow
 from translator import Translator
@@ -39,11 +43,7 @@ _LEGACY_CONFIG_PATH = Path.home() / '.text_translator_config.json'
 
 
 def _setup_logging() -> None:
-    logging.basicConfig(
-        level=logging.INFO,
-        format='%(asctime)s [%(levelname)-8s] %(name)s: %(message)s',
-        datefmt='%H:%M:%S',
-    )
+    configure_logging()
 
 
 def _resolve_config_path() -> Path:
@@ -70,6 +70,10 @@ def _resolve_config_path() -> Path:
     return _XDG_CONFIG_PATH
 
 
+class TranslationBridge(QObject):
+    translation_done = pyqtSignal(str, bool)
+
+
 class TranslatorApp:
     def __init__(self) -> None:
         self.app = QApplication(sys.argv)
@@ -85,10 +89,13 @@ class TranslatorApp:
 
         self.translator = Translator(self.config)
         self.voice_input = VoiceInput(self.config, self.translator)
+        self.translation_bridge = TranslationBridge()
+        self.translation_bridge.translation_done.connect(self._on_translation_done)
+
         self.keyboard_listener = KeyboardListener(
             self.config, self.translator, voice_input=self.voice_input
         )
-        self.keyboard_listener.translation_done = self._on_translation_done
+        self.keyboard_listener.translation_done = self.translation_bridge.translation_done.emit
         self.settings_window: SettingsWindow | None = None
 
         self.setup_tray()
@@ -100,6 +107,13 @@ class TranslatorApp:
                 '(pip install six pynput). See console output for details.',
                 QSystemTrayIcon.MessageIcon.Warning,
                 20000,
+            )
+        elif platform.system() == 'Linux' and os.geteuid() != 0 and is_wayland():
+            self.tray.showMessage(
+                'Olympus (Wayland)',
+                'Для глобальных горячих клавиш в других приложениях на Wayland запустите:\nsudo ./run.sh',
+                QSystemTrayIcon.MessageIcon.Information,
+                15000,
             )
 
     def load_config(self) -> dict:
@@ -147,15 +161,25 @@ class TranslatorApp:
 
     def reload_settings(self) -> None:
         logger.info('Applying settings…')
-        self.keyboard_listener.stop()
-        # Give pynput's listener thread time to fully unregister before starting a new one.
-        time.sleep(0.2)
+        old_listener = self.keyboard_listener
+        old_listener.stop()
+        # Wait for the old pynput listener thread to fully unregister.
+        # pynput GlobalHotKeys.join() blocks until the internal thread exits.
+        # We give it up to 1 s; fall back to a short sleep if join is unavailable.
+        backend_listener = getattr(old_listener, '_listener', None)
+        if backend_listener is not None and hasattr(backend_listener, 'join'):
+            try:
+                backend_listener.join(timeout=1.0)
+            except Exception:
+                pass
+        else:
+            time.sleep(0.3)
 
         self.translator.config = self.config
         self.keyboard_listener = KeyboardListener(
             self.config, self.translator, voice_input=self.voice_input
         )
-        self.keyboard_listener.translation_done = self._on_translation_done
+        self.keyboard_listener.translation_done = self.translation_bridge.translation_done.emit
         self.keyboard_listener.start()
         logger.info('Settings applied — hotkeys active.')
 

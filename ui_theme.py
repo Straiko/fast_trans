@@ -83,6 +83,10 @@ QWidget {{
     background: transparent;
 }}
 
+SettingsWindow, QWidget#settingsWindow {{
+    background-color: {COLOR_BASE};
+}}
+
 QLabel#appTitleLabel {{
     font-size: {FS_TITLE};
     font-weight: 700;

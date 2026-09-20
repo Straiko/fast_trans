@@ -5,28 +5,11 @@ Configuration validation and sanitization.
 import logging
 from typing import Any
 
+from lang_registry import VALID_LANGUAGES
+
 logger = logging.getLogger(__name__)
 
-VALID_API_PROVIDERS = {'groq', 'openai', 'anthropic', 'huggingface'}
-VALID_LANGUAGES = {
-    'auto',
-    'ru',
-    'en',
-    'uk',
-    'pl',
-    'de',
-    'fr',
-    'es',
-    'it',
-    'pt',
-    'tr',
-    'ar',
-    'zh-cn',
-    'zh-tw',
-    'pt-br',
-    'ja',
-    'ko',
-}
+VALID_API_PROVIDERS = {'groq', 'openai', 'anthropic', 'huggingface', 'ollama'}
 
 
 def validate_config(config: dict[str, Any]) -> dict[str, Any]:

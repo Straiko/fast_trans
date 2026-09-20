@@ -72,42 +72,35 @@ class KeyboardListener:
         try:
             auto_replace = self.config.get('auto_replace', True)
 
-            clipboard_before = None
-            if auto_replace:
-                logger.info('  Capturing selection (Ctrl+C) and translating…')
-                clipboard_before = pyperclip.paste()
-                time.sleep(0.3)
+            # Always capture selection via Ctrl+C — no manual copying needed.
+            logger.info('  Capturing selection (Ctrl+C) and translating…')
+            clipboard_before = pyperclip.paste()
+            get_backend().send('ctrl+c')
+            time.sleep(0.3)
+            selected_text = pyperclip.paste()
+
+            if not selected_text or not selected_text.strip():
+                logger.warning('  No text found — select text and try again.')
+                return
+
+            # Retry once if clipboard didn't change (slow apps / Wayland lag).
+            if selected_text == clipboard_before:
+                time.sleep(0.2)
                 get_backend().send('ctrl+c')
-                time.sleep(0.25)
-                selected_text = pyperclip.paste()
-
-                if not selected_text or not selected_text.strip():
-                    logger.warning('  No text found — select text and try again.')
-                    return
-
-                if selected_text == clipboard_before:
-                    time.sleep(0.2)
-                    get_backend().send('ctrl+c')
-                    time.sleep(0.2)
-                    selected_text_retry = pyperclip.paste()
-                    if selected_text_retry and selected_text_retry.strip():
-                        selected_text = selected_text_retry
-                    if (
-                        selected_text == clipboard_before
-                        and clipboard_before
-                        and clipboard_before.strip()
-                    ):
-                        logger.info('  Clipboard unchanged — using current clipboard as source.')
-                    elif selected_text == clipboard_before:
-                        logger.warning(
-                            '  Clipboard unchanged — nothing selected? Select text and retry.'
-                        )
-                        return
-            else:
-                logger.info('  Translating from clipboard (copy text with Ctrl+C first)…')
-                selected_text = pyperclip.paste()
-                if not selected_text or not selected_text.strip():
-                    logger.warning('  Clipboard is empty — copy text first, then press hotkey.')
+                time.sleep(0.2)
+                selected_text_retry = pyperclip.paste()
+                if selected_text_retry and selected_text_retry.strip():
+                    selected_text = selected_text_retry
+                if (
+                    selected_text == clipboard_before
+                    and clipboard_before
+                    and clipboard_before.strip()
+                ):
+                    logger.info('  Clipboard unchanged — using current clipboard as source.')
+                elif selected_text == clipboard_before:
+                    logger.warning(
+                        '  Clipboard unchanged — nothing selected? Select text and retry.'
+                    )
                     return
 
             logger.info('  Source (%d chars): %.50s…', len(selected_text), selected_text)

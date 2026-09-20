@@ -17,6 +17,7 @@ import threading
 import requests
 import speech_recognition as sr
 from PyQt6.QtCore import QObject, QSize, Qt, QTimer, pyqtSignal
+from PyQt6.QtGui import QPainter
 from PyQt6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -30,11 +31,13 @@ from PyQt6.QtWidgets import (
     QListWidgetItem,
     QPushButton,
     QStackedWidget,
+    QStyle,
+    QStyleOption,
     QVBoxLayout,
     QWidget,
 )
 
-from mic_devices import SYSTEM_DEFAULT_INDEX, build_mic_entries
+from mic_devices import SYSTEM_DEFAULT_INDEX, build_mic_entries, suppress_c_stderr
 from ui_theme import APP_STYLESHEET
 
 logger = logging.getLogger(__name__)
@@ -57,6 +60,11 @@ _PROVIDER_HELP: dict[str, str] = {
         'Anthropic — paid usage: https://console.anthropic.com\n'
         'Model: claude-3-5-haiku (connection test)'
     ),
+    'ollama': (
+        'Ollama — local inference, no API key required.\n'
+        'Install: https://ollama.com  then run: ollama pull llama3\n'
+        'Default URL: http://localhost:11434  Default model: llama3'
+    ),
 }
 
 
@@ -68,7 +76,8 @@ class _ApiTestBridge(QObject):
 
 def _http_probe(provider: str, api_key: str) -> tuple[bool, str]:
     key = api_key.strip()
-    if not key:
+    # Ollama is local — no API key required.
+    if not key and provider != 'ollama':
         return False, 'No API key entered'
 
     try:
@@ -116,6 +125,10 @@ def _http_probe(provider: str, api_key: str) -> tuple[bool, str]:
                 json={'inputs': 'ping', 'parameters': {'max_new_tokens': 1}},
                 timeout=18,
             )
+        elif provider == 'ollama':
+            # Ollama needs no API key — probe the local /api/tags endpoint.
+            base_url = 'http://localhost:11434'
+            r = requests.get(f'{base_url}/api/tags', timeout=5)
         else:
             return False, f'Unknown provider: {provider}'
 
@@ -160,6 +173,8 @@ class SettingsWindow(QWidget):
     # ------------------------------------------------------------------
     def init_ui(self) -> None:
         self.setWindowTitle('Olympus — Settings')
+        self.setObjectName('settingsWindow')
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self.setMinimumSize(760, 640)
         self.resize(880, 700)
         self.setStyleSheet(APP_STYLESHEET)
@@ -366,7 +381,7 @@ class SettingsWindow(QWidget):
         aform.setVerticalSpacing(12)
 
         self.provider_combo = QComboBox()
-        self.provider_combo.addItems(['groq', 'huggingface', 'openai', 'anthropic'])
+        self.provider_combo.addItems(['groq', 'huggingface', 'openai', 'anthropic', 'ollama'])
         self.provider_combo.setCurrentText(self.config.get('api_provider', 'groq'))
 
         self.provider_info = QLabel()
@@ -397,7 +412,11 @@ class SettingsWindow(QWidget):
         self._test_btn = QPushButton('Test connection')
         self._test_btn.setObjectName('secondaryButton')
         self._test_btn.clicked.connect(self._test_api)
-        self._test_btn.setEnabled(bool(self.api_key_input.text().strip()))
+        # Ollama needs no key; for others, key must be non-empty.
+        provider_now = self.provider_combo.currentText()
+        self._test_btn.setEnabled(
+            provider_now == 'ollama' or bool(self.api_key_input.text().strip())
+        )
         test_row.addWidget(self._test_btn)
 
         self._test_status = QLabel('')
@@ -414,13 +433,14 @@ class SettingsWindow(QWidget):
         """Re-query PortAudio and rebuild the curated list."""
         self._mic_entries_all = []
         try:
-            raw = sr.Microphone.list_microphone_names()
+            with suppress_c_stderr():
+                raw = sr.Microphone.list_microphone_names()
         except Exception as exc:
             logger.error('Microphone load error: %s', exc)
             self.mic_combo.blockSignals(True)
             self.mic_combo.clear()
-            self.mic_combo.addItem('Failed to load microphones', 0)
-            self._select_mic_row_for_data(self.config.get('microphone_index', 0))
+            self.mic_combo.addItem('Failed to load microphones', SYSTEM_DEFAULT_INDEX)
+            self._select_mic_row_for_data(self.config.get('microphone_index', SYSTEM_DEFAULT_INDEX))
             self.mic_combo.blockSignals(False)
             return
         if not isinstance(raw, (list, tuple)):
@@ -428,7 +448,7 @@ class SettingsWindow(QWidget):
             raw = []
         device_names = [str(n) for n in raw]
         self._mic_entries_all = build_mic_entries(device_names)
-        self._refill_mic_combo_after_filter(select_data=self.config.get('microphone_index', 0))
+        self._refill_mic_combo_after_filter(select_data=self.config.get('microphone_index', SYSTEM_DEFAULT_INDEX))
 
     def _refill_mic_combo_after_filter(self, select_data: int | None = None) -> None:
         """Apply search filter; keep selection when the device is still visible."""
@@ -436,7 +456,7 @@ class SettingsWindow(QWidget):
         prev = self.mic_combo.currentData() if self.mic_combo.count() else None
         pick = select_data if select_data is not None else prev
         if pick is None:
-            pick = self.config.get('microphone_index', 0)
+            pick = self.config.get('microphone_index', SYSTEM_DEFAULT_INDEX)
 
         self.mic_combo.blockSignals(True)
         self.mic_combo.clear()
@@ -469,6 +489,10 @@ class SettingsWindow(QWidget):
     # ------------------------------------------------------------------
     def on_provider_changed(self, provider: str) -> None:
         self.provider_info.setText(_PROVIDER_HELP.get(provider, ''))
+        is_ollama = provider == 'ollama'
+        self.api_key_input.setEnabled(not is_ollama)
+        self._reveal_btn.setEnabled(not is_ollama)
+        self._test_btn.setEnabled(is_ollama or bool(self.api_key_input.text().strip()))
 
     def _toggle_key_visibility(self, visible: bool) -> None:
         self.api_key_input.setEchoMode(
@@ -504,11 +528,13 @@ class SettingsWindow(QWidget):
         self.config['api_provider'] = self.provider_combo.currentText()
         self.config['api_key'] = self.api_key_input.text()
         mic_data = self.mic_combo.currentData()
-        self.config['microphone_index'] = mic_data if mic_data is not None else 0
+        self.config['microphone_index'] = mic_data if mic_data is not None else SYSTEM_DEFAULT_INDEX
 
     def _flush_apply(self) -> None:
+        old_config = dict(self.config)
         self._sync_ui_to_config()
-        self.save_callback()
+        if self.config != old_config:
+            self.save_callback()
 
     def _schedule_apply(self) -> None:
         if self._suspend_auto_apply:
@@ -574,3 +600,11 @@ class SettingsWindow(QWidget):
         self._sync_ui_to_config()
         self.save_callback()
         event.accept()
+
+    def paintEvent(self, event) -> None:
+        opt = QStyleOption()
+        opt.initFrom(self)
+        p = QPainter(self)
+        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, p, self)
+        super().paintEvent(event)
+

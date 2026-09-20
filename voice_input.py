@@ -11,54 +11,18 @@ import time
 
 import pyperclip
 import speech_recognition as sr
-from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtWidgets import QWidget
 
 from input_backend import send_key_combo
+from lang_registry import RECOGNITION_LANG_MAP
+from mic_devices import SYSTEM_DEFAULT_INDEX, suppress_c_stderr
 
 logger = logging.getLogger(__name__)
 
-RECOGNITION_LANG_MAP: dict[str, str] = {
-    'auto': 'ru-RU',
-    'ru': 'ru-RU',
-    'en': 'en-US',
-    'uk': 'uk-UA',
-    'pl': 'pl-PL',
-    'de': 'de-DE',
-    'fr': 'fr-FR',
-    'es': 'es-ES',
-    'it': 'it-IT',
-    'pt': 'pt-BR',
-    'tr': 'tr-TR',
-    'ar': 'ar-SA',
-    'zh-cn': 'zh-CN',
-    'ja': 'ja-JP',
-    'ko': 'ko-KR',
-}
-
-
-class VoiceTranslateThread(QThread):
-    corrected_ready = pyqtSignal(str)
-    translation_done = pyqtSignal(str)
-    failed = pyqtSignal(str)
-
-    def __init__(self, translator, text: str, fix_first: bool) -> None:
-        super().__init__()
-        self._translator = translator
-        self._text = text
-        self._fix_first = fix_first
-
-    def run(self) -> None:
-        try:
-            text = self._text
-            if self._fix_first:
-                fixed = self._translator.fix_speech_recognition_errors(text)
-                self.corrected_ready.emit(fixed)
-                text = fixed
-            final = self._translator.translate(text)
-            self.translation_done.emit(final)
-        except Exception as e:
-            self.failed.emit(str(e))
+# How long (seconds) each audio chunk is when polling stop_recording.
+_CHUNK_DURATION = 1.0
+# Maximum total recording time in seconds.
+_MAX_RECORD_SECONDS = 60
 
 
 class RecordingWindow(QWidget):
@@ -92,44 +56,48 @@ class VoiceInput:
 
     def _record_audio_simple(self) -> None:
         try:
-            mic_index = self.config.get('microphone_index', -1)
-            if mic_index == -1:
-                logger.info('Microphone: system default (no fixed device index)')
-                mic_ctx = sr.Microphone()
-            else:
-                logger.info('Microphone device index %s', mic_index)
-                try:
-                    mic_ctx = sr.Microphone(device_index=mic_index)
-                except OSError as e:
-                    logger.error(
-                        'Failed to open microphone %s: %s, falling back to default', mic_index, e
-                    )
+            mic_index = self.config.get('microphone_index', SYSTEM_DEFAULT_INDEX)
+            with suppress_c_stderr():
+                if mic_index == SYSTEM_DEFAULT_INDEX:
+                    logger.info('Microphone: system default (no fixed device index)')
                     mic_ctx = sr.Microphone()
+                else:
+                    logger.info('Microphone device index %s', mic_index)
+                    try:
+                        mic_ctx = sr.Microphone(device_index=mic_index)
+                    except OSError as e:
+                        logger.error(
+                            'Failed to open microphone %s: %s, falling back to default', mic_index, e
+                        )
+                        mic_ctx = sr.Microphone()
 
             with mic_ctx as source:
                 logger.info('Adjusting for ambient noise…')
                 self.recognizer.adjust_for_ambient_noise(source, duration=0.5)
                 self.recognizer.energy_threshold = 50
                 self.recognizer.dynamic_energy_threshold = True
-                self.recognizer.pause_threshold = 2.0
 
-                logger.info('Speak now (auto-stops after silence)…')
-                audio = self.recognizer.listen(source, timeout=30, phrase_time_limit=60)
+                logger.info('Speak now (press hotkey again to stop early)…')
+                audio = self._listen_with_stop_check(source)
 
-                logger.info('Processing…')
-                src_lang = (self.config.get('source_lang') or 'auto').strip().lower()
-                recognition_lang = RECOGNITION_LANG_MAP.get(src_lang, 'ru-RU')
-                text = self.recognizer.recognize_google(audio, language=recognition_lang)
-                logger.info('Recognized: %s', text)
+            if audio is None:
+                logger.info('Recording stopped by user.')
+                return
 
-                if self.config.get('ai_enhance', True) and self.translator.llm_available():
-                    text = self.translator.enhance_text(text)
+            logger.info('Processing…')
+            src_lang = (self.config.get('source_lang') or 'auto').strip().lower()
+            recognition_lang = RECOGNITION_LANG_MAP.get(src_lang, 'ru-RU')
+            text = self.recognizer.recognize_google(audio, language=recognition_lang)
+            logger.info('Recognized: %s', text)
 
-                translated = self.translator.translate(text)
-                logger.info('Translated: %s', translated)
-                pyperclip.copy(translated)
-                time.sleep(0.08)
-                send_key_combo('ctrl+v')
+            if self.config.get('ai_enhance', True) and self.translator.llm_available():
+                text = self.translator.enhance_text(text)
+
+            translated = self.translator.translate(text)
+            logger.info('Translated: %s', translated)
+            pyperclip.copy(translated)
+            time.sleep(0.08)
+            send_key_combo('ctrl+v')
 
         except sr.WaitTimeoutError:
             logger.warning('Timeout — no speech detected')
@@ -144,3 +112,49 @@ class VoiceInput:
         finally:
             self.is_recording = False
             self.stop_recording = False
+
+    def _listen_with_stop_check(self, source: sr.AudioSource) -> sr.AudioData | None:
+        """Record audio in short chunks, checking stop_recording between each.
+
+        Returns combined AudioData, or None if user pressed stop before any speech.
+        Uses sr.Recognizer.record() with duration= so the loop can be interrupted
+        without waiting for the full phrase_time_limit / timeout to expire.
+        """
+        frames: list[bytes] = []
+        sample_rate: int | None = None
+        sample_width: int | None = None
+        elapsed = 0.0
+
+        while elapsed < _MAX_RECORD_SECONDS:
+            if self.stop_recording:
+                break
+            chunk: sr.AudioData = self.recognizer.record(source, duration=_CHUNK_DURATION)
+            if sample_rate is None:
+                sample_rate = chunk.sample_rate
+                sample_width = chunk.sample_width
+            frames.append(chunk.frame_data)
+            elapsed += _CHUNK_DURATION
+
+            # Stop automatically after silence: check energy on last chunk.
+            # Silence heuristic: mean absolute amplitude < threshold.
+            if self._is_silence(chunk):
+                # Give the user one extra chunk in case they paused briefly.
+                if frames and len(frames) > 2:
+                    logger.debug('Silence detected — stopping recording.')
+                    break
+
+        if not frames or sample_rate is None or sample_width is None:
+            return None
+
+        combined = b''.join(frames)
+        return sr.AudioData(combined, sample_rate, sample_width)
+
+    @staticmethod
+    def _is_silence(audio: sr.AudioData, threshold: int = 200) -> bool:
+        """Return True if the chunk is below the amplitude threshold (silence)."""
+        import audioop
+        try:
+            rms = audioop.rms(audio.frame_data, audio.sample_width)
+            return rms < threshold
+        except Exception:
+            return False
