@@ -32,11 +32,17 @@ jobs:
 
     - name: Build executable with PyInstaller
       run: |
-        .\build_windows.ps1
+        pyinstaller --onefile --noconsole --name "Olympus" --icon "icon.ico" --add-data "icon.png;." --hidden-import="pynput.keyboard._win32" --hidden-import="pynput.mouse._win32" --hidden-import="pyperclip" main.py
 
     - name: Build Installer
       run: |
         iscc Olympus_Setup.iss
+
+    - name: Upload Standalone EXE
+      uses: actions/upload-artifact@v4
+      with:
+        name: Olympus-Portable
+        path: dist/Olympus.exe
 
     - name: Upload Installer Artifact
       uses: actions/upload-artifact@v4
@@ -46,8 +52,11 @@ jobs:
 
     - name: Update Release
       if: github.event_name == 'push' && github.ref == 'refs/heads/master'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: v1.0.0
-        files: Output/Olympus-Setup.exe
+        name: Olympus v1.0.0
+        files: |
+          dist/Olympus.exe
+          Output/Olympus-Setup.exe
         token: ${{ secrets.GITHUB_TOKEN }}
