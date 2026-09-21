@@ -448,7 +448,9 @@ class SettingsWindow(QWidget):
             raw = []
         device_names = [str(n) for n in raw]
         self._mic_entries_all = build_mic_entries(device_names)
-        self._refill_mic_combo_after_filter(select_data=self.config.get('microphone_index', SYSTEM_DEFAULT_INDEX))
+        self._refill_mic_combo_after_filter(
+            select_data=self.config.get('microphone_index', SYSTEM_DEFAULT_INDEX)
+        )
 
     def _refill_mic_combo_after_filter(self, select_data: int | None = None) -> None:
         """Apply search filter; keep selection when the device is still visible."""
@@ -609,4 +611,3 @@ class SettingsWindow(QWidget):
         if style is not None:
             style.drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, p, self)
         super().paintEvent(event)
-

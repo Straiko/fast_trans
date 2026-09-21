@@ -67,7 +67,9 @@ class VoiceInput:
                         mic_ctx = sr.Microphone(device_index=mic_index)
                     except OSError as e:
                         logger.error(
-                            'Failed to open microphone %s: %s, falling back to default', mic_index, e
+                            'Failed to open microphone %s: %s, falling back to default',
+                            mic_index,
+                            e,
                         )
                         mic_ctx = sr.Microphone()
 
@@ -151,6 +153,7 @@ class VoiceInput:
     def _is_silence(audio: sr.AudioData, threshold: int = 200) -> bool:
         """Return True if the chunk is below the amplitude threshold (silence)."""
         import audioop
+
         try:
             rms = audioop.rms(audio.frame_data, audio.sample_width)
             return rms < threshold

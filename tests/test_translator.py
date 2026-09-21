@@ -95,7 +95,9 @@ class TestTranslate:
     def test_translate_exception_returns_original(self, translator):
         with (
             patch('translator.DeepGoogleTranslator', side_effect=Exception('google error')),
-            patch.object(translator, '_translate_mymemory', side_effect=Exception('mymemory error')),
+            patch.object(
+                translator, '_translate_mymemory', side_effect=Exception('mymemory error')
+            ),
         ):
             result = translator.translate('Привет')
             assert result == 'Привет'
@@ -104,7 +106,9 @@ class TestTranslate:
         translator.config['api_key'] = 'sk-fake'
         with (
             patch('translator.DeepGoogleTranslator', side_effect=Exception('429 TooManyRequests')),
-            patch.object(translator, 'translate_with_llm', return_value='LLM translated') as mock_llm,
+            patch.object(
+                translator, 'translate_with_llm', return_value='LLM translated'
+            ) as mock_llm,
         ):
             result = translator.translate('Привет')
             assert result == 'LLM translated'
@@ -113,7 +117,9 @@ class TestTranslate:
     def test_translate_fallback_to_mymemory(self, translator):
         with (
             patch('translator.DeepGoogleTranslator', side_effect=Exception('429 TooManyRequests')),
-            patch.object(translator, '_translate_mymemory', return_value='MyMemory translated') as mock_mm,
+            patch.object(
+                translator, '_translate_mymemory', return_value='MyMemory translated'
+            ) as mock_mm,
         ):
             result = translator.translate('Привет')
             assert result == 'MyMemory translated'
@@ -172,8 +178,8 @@ class TestTranslationCache:
         mock_inst.translate.side_effect = ['one', 'two']
         mock_deep_cls.return_value = mock_inst
 
-        translator.translate('a')   # populates key_a
-        translator.translate('b')   # populates key_b
+        translator.translate('a')  # populates key_a
+        translator.translate('b')  # populates key_b
 
         key_a = translator._get_cache_key('a', 'auto', 'en')
         key_b = translator._get_cache_key('b', 'auto', 'en')
@@ -191,7 +197,9 @@ class TestTranslationCache:
         from translator import _TRANSLATION_CACHE_SIZE
 
         mock_inst = MagicMock()
-        mock_inst.translate.side_effect = [f'result_{i}' for i in range(_TRANSLATION_CACHE_SIZE + 2)]
+        mock_inst.translate.side_effect = [
+            f'result_{i}' for i in range(_TRANSLATION_CACHE_SIZE + 2)
+        ]
         mock_deep_cls.return_value = mock_inst
 
         # Fill the cache.
@@ -211,7 +219,9 @@ class TestTranslationCache:
         key_second = translator._get_cache_key('text_1', 'auto', 'fake001')
 
         assert key_first in translator._translation_cache, 'text_0 should still be cached (MRU)'
-        assert key_second not in translator._translation_cache, 'text_1 should have been evicted (LRU)'
+        assert key_second not in translator._translation_cache, (
+            'text_1 should have been evicted (LRU)'
+        )
 
     @patch('translator.DeepGoogleTranslator')
     def test_cache_uses_orderdict(self, mock_deep_cls, translator):

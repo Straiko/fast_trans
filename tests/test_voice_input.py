@@ -60,9 +60,21 @@ class TestRecognitionLangMap:
 
     def test_all_source_langs_covered(self):
         source_langs = [
-            'auto', 'ru', 'en', 'uk', 'pl', 'de',
-            'fr', 'es', 'it', 'pt', 'tr', 'ar',
-            'zh-cn', 'ja', 'ko',
+            'auto',
+            'ru',
+            'en',
+            'uk',
+            'pl',
+            'de',
+            'fr',
+            'es',
+            'it',
+            'pt',
+            'tr',
+            'ar',
+            'zh-cn',
+            'ja',
+            'ko',
         ]
         for lang in source_langs:
             assert lang in RECOGNITION_LANG_MAP, (

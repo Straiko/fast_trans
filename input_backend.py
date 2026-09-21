@@ -19,10 +19,38 @@ logger = logging.getLogger(__name__)
 
 
 _LATIN_TO_CYRILLIC: dict[str, str] = {
-    'q': 'й', 'w': 'ц', 'e': 'у', 'r': 'к', 't': 'е', 'y': 'н', 'u': 'г', 'i': 'ш', 'o': 'щ', 'p': 'з',
-    'a': 'ф', 's': 'ы', 'd': 'в', 'f': 'а', 'g': 'п', 'h': 'р', 'j': 'о', 'k': 'л', 'l': 'д',
-    'z': 'я', 'x': 'ч', 'c': 'с', 'v': 'м', 'b': 'и', 'n': 'т', 'm': 'ь',
-    '[': 'х', ']': 'ъ', ';': 'ж', "'": 'э', ',': 'б', '.': 'ю',
+    'q': 'й',
+    'w': 'ц',
+    'e': 'у',
+    'r': 'к',
+    't': 'е',
+    'y': 'н',
+    'u': 'г',
+    'i': 'ш',
+    'o': 'щ',
+    'p': 'з',
+    'a': 'ф',
+    's': 'ы',
+    'd': 'в',
+    'f': 'а',
+    'g': 'п',
+    'h': 'р',
+    'j': 'о',
+    'k': 'л',
+    'l': 'д',
+    'z': 'я',
+    'x': 'ч',
+    'c': 'с',
+    'v': 'м',
+    'b': 'и',
+    'n': 'т',
+    'm': 'ь',
+    '[': 'х',
+    ']': 'ъ',
+    ';': 'ж',
+    "'": 'э',
+    ',': 'б',
+    '.': 'ю',
 }
 
 
@@ -31,14 +59,29 @@ def is_valid_hotkey(spec: str) -> bool:
     if not spec or not spec.strip():
         return False
     parts = [p.strip().lower() for p in spec.split('+') if p.strip()]
-    modifiers = {'ctrl', 'control', 'ctl', 'shift', 'alt', 'meta', 'option', 'win', 'super', 'cmd', 'command', 'windows'}
+    modifiers = {
+        'ctrl',
+        'control',
+        'ctl',
+        'shift',
+        'alt',
+        'meta',
+        'option',
+        'win',
+        'super',
+        'cmd',
+        'command',
+        'windows',
+    }
     non_modifiers = [p for p in parts if p not in modifiers]
     return len(non_modifiers) >= 1
 
 
 def is_wayland() -> bool:
     """True if running inside a Wayland desktop session."""
-    return bool(os.environ.get('WAYLAND_DISPLAY') or os.environ.get('XDG_SESSION_TYPE') == 'wayland')
+    return bool(
+        os.environ.get('WAYLAND_DISPLAY') or os.environ.get('XDG_SESSION_TYPE') == 'wayland'
+    )
 
 
 def _expand_cyrillic_hotkeys(mapping: list[tuple[str, Callable]]) -> list[tuple[str, Callable]]:

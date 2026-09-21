@@ -135,7 +135,7 @@ class Translator:
         """Fallback translation using MyMemory free API."""
         src_code = src.split('-')[0].lower()
         if src_code == 'auto':
-            has_cyrillic = any('\u0400' <= ch <= '\u04FF' for ch in text)
+            has_cyrillic = any('\u0400' <= ch <= '\u04ff' for ch in text)
             src_code = 'ru' if has_cyrillic else 'en'
 
         dest_code = dest.split('-')[0].lower()

@@ -7,23 +7,23 @@ Both config_validator and voice_input import from here to avoid drift.
 # Maps language code → Google Speech-to-Text locale tag.
 # Keys are the canonical codes used throughout the config.
 LANG_REGISTRY: dict[str, str] = {
-    'auto':  'ru-RU',   # default fallback for speech recognition
-    'ru':    'ru-RU',
-    'en':    'en-US',
-    'uk':    'uk-UA',
-    'pl':    'pl-PL',
-    'de':    'de-DE',
-    'fr':    'fr-FR',
-    'es':    'es-ES',
-    'it':    'it-IT',
-    'pt':    'pt-BR',
+    'auto': 'ru-RU',  # default fallback for speech recognition
+    'ru': 'ru-RU',
+    'en': 'en-US',
+    'uk': 'uk-UA',
+    'pl': 'pl-PL',
+    'de': 'de-DE',
+    'fr': 'fr-FR',
+    'es': 'es-ES',
+    'it': 'it-IT',
+    'pt': 'pt-BR',
     'pt-br': 'pt-BR',
-    'tr':    'tr-TR',
-    'ar':    'ar-SA',
+    'tr': 'tr-TR',
+    'ar': 'ar-SA',
     'zh-cn': 'zh-CN',
     'zh-tw': 'zh-TW',
-    'ja':    'ja-JP',
-    'ko':    'ko-KR',
+    'ja': 'ja-JP',
+    'ko': 'ko-KR',
 }
 
 # Set of valid language codes for config validation.
