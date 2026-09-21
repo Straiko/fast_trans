@@ -6,21 +6,20 @@ Olympus — text & voice translator
   • AI enhancement: optimise text for neural networks
 """
 
+import contextlib
 import json
 import logging
 import os
+import platform
 import sys
 import time
 from pathlib import Path
-
-import platform
-
-from app_logging import configure as configure_logging
 
 from PyQt6.QtCore import QObject, Qt, pyqtSignal
 from PyQt6.QtGui import QAction, QColor, QIcon, QLinearGradient, QPainter, QPen, QPixmap
 from PyQt6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
+from app_logging import configure as configure_logging
 from config_validator import validate_config
 from input_backend import degraded_input_mode, is_wayland
 from keyboard_listener import KeyboardListener
@@ -168,10 +167,8 @@ class TranslatorApp:
         # We give it up to 1 s; fall back to a short sleep if join is unavailable.
         backend_listener = getattr(old_listener, '_listener', None)
         if backend_listener is not None and hasattr(backend_listener, 'join'):
-            try:
+            with contextlib.suppress(Exception):
                 backend_listener.join(timeout=1.0)
-            except Exception:
-                pass
         else:
             time.sleep(0.3)
 

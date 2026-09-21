@@ -605,6 +605,8 @@ class SettingsWindow(QWidget):
         opt = QStyleOption()
         opt.initFrom(self)
         p = QPainter(self)
-        self.style().drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, p, self)
+        style = self.style()
+        if style is not None:
+            style.drawPrimitive(QStyle.PrimitiveElement.PE_Widget, opt, p, self)
         super().paintEvent(event)
 

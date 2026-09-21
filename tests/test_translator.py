@@ -93,44 +93,54 @@ class TestTranslate:
         mock_deep_cls.assert_called_once_with(source='zh-CN', target='en')
 
     def test_translate_exception_returns_original(self, translator):
-        with patch('translator.DeepGoogleTranslator', side_effect=Exception('google error')):
-            with patch.object(translator, '_translate_mymemory', side_effect=Exception('mymemory error')):
-                result = translator.translate('Привет')
-                assert result == 'Привет'
+        with (
+            patch('translator.DeepGoogleTranslator', side_effect=Exception('google error')),
+            patch.object(translator, '_translate_mymemory', side_effect=Exception('mymemory error')),
+        ):
+            result = translator.translate('Привет')
+            assert result == 'Привет'
 
     def test_translate_fallback_to_llm(self, translator):
         translator.config['api_key'] = 'sk-fake'
-        with patch('translator.DeepGoogleTranslator', side_effect=Exception('429 TooManyRequests')):
-            with patch.object(translator, 'translate_with_llm', return_value='LLM translated') as mock_llm:
-                result = translator.translate('Привет')
-                assert result == 'LLM translated'
-                mock_llm.assert_called_once()
+        with (
+            patch('translator.DeepGoogleTranslator', side_effect=Exception('429 TooManyRequests')),
+            patch.object(translator, 'translate_with_llm', return_value='LLM translated') as mock_llm,
+        ):
+            result = translator.translate('Привет')
+            assert result == 'LLM translated'
+            mock_llm.assert_called_once()
 
     def test_translate_fallback_to_mymemory(self, translator):
-        with patch('translator.DeepGoogleTranslator', side_effect=Exception('429 TooManyRequests')):
-            with patch.object(translator, '_translate_mymemory', return_value='MyMemory translated') as mock_mm:
-                result = translator.translate('Привет')
-                assert result == 'MyMemory translated'
-                mock_mm.assert_called_once()
+        with (
+            patch('translator.DeepGoogleTranslator', side_effect=Exception('429 TooManyRequests')),
+            patch.object(translator, '_translate_mymemory', return_value='MyMemory translated') as mock_mm,
+        ):
+            result = translator.translate('Привет')
+            assert result == 'MyMemory translated'
+            mock_mm.assert_called_once()
 
     def test_translate_full_fallback_chain(self, translator):
         """Google fails → LLM fails → MyMemory succeeds."""
         translator.config['api_key'] = 'sk-fake'
-        with patch('translator.DeepGoogleTranslator', side_effect=Exception('google error')):
-            with patch.object(translator, 'translate_with_llm', side_effect=Exception('llm error')):
-                with patch.object(translator, '_translate_mymemory', return_value='MM result') as mock_mm:
-                    result = translator.translate('Привет')
-                    assert result == 'MM result'
-                    mock_mm.assert_called_once()
+        with (
+            patch('translator.DeepGoogleTranslator', side_effect=Exception('google error')),
+            patch.object(translator, 'translate_with_llm', side_effect=Exception('llm error')),
+            patch.object(translator, '_translate_mymemory', return_value='MM result') as mock_mm,
+        ):
+            result = translator.translate('Привет')
+            assert result == 'MM result'
+            mock_mm.assert_called_once()
 
     def test_translate_all_fail_returns_original(self, translator):
         """All three providers fail — return original text."""
         translator.config['api_key'] = 'sk-fake'
-        with patch('translator.DeepGoogleTranslator', side_effect=Exception('google')):
-            with patch.object(translator, 'translate_with_llm', side_effect=Exception('llm')):
-                with patch.object(translator, '_translate_mymemory', side_effect=Exception('mm')):
-                    result = translator.translate('Привет')
-                    assert result == 'Привет'
+        with (
+            patch('translator.DeepGoogleTranslator', side_effect=Exception('google')),
+            patch.object(translator, 'translate_with_llm', side_effect=Exception('llm')),
+            patch.object(translator, '_translate_mymemory', side_effect=Exception('mm')),
+        ):
+            result = translator.translate('Привет')
+            assert result == 'Привет'
 
     @patch('translator.DeepGoogleTranslator')
     def test_translate_empty_string(self, mock_deep_cls, translator):

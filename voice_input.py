@@ -137,11 +137,9 @@ class VoiceInput:
 
             # Stop automatically after silence: check energy on last chunk.
             # Silence heuristic: mean absolute amplitude < threshold.
-            if self._is_silence(chunk):
-                # Give the user one extra chunk in case they paused briefly.
-                if frames and len(frames) > 2:
-                    logger.debug('Silence detected — stopping recording.')
-                    break
+            if self._is_silence(chunk) and frames and len(frames) > 2:
+                logger.debug('Silence detected — stopping recording.')
+                break
 
         if not frames or sample_rate is None or sample_width is None:
             return None
