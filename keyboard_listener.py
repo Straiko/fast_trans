@@ -26,13 +26,15 @@ class KeyboardListener:
     def start(self) -> None:
         self.running = True
         backend = get_backend()
+        hotkey = self.config.get('hotkey', 'ctrl+shift+t')
+        voice_hotkey = self.config.get('voice_hotkey', 'ctrl+shift+v')
         try:
-            logger.info('  Translate hotkey: %s', self.config['hotkey'])
-            logger.info('  Voice hotkey:     %s', self.config['voice_hotkey'])
+            logger.info('  Translate hotkey: %s', hotkey)
+            logger.info('  Voice hotkey:     %s', voice_hotkey)
             backend.start_hotkeys(
                 [
-                    (self.config['hotkey'], self.on_translate_hotkey),
-                    (self.config['voice_hotkey'], self.on_voice_hotkey),
+                    (hotkey, self.on_translate_hotkey),
+                    (voice_hotkey, self.on_voice_hotkey),
                 ]
             )
             if degraded_input_mode():
@@ -42,14 +44,14 @@ class KeyboardListener:
         except Exception as e:
             logger.error('  Hotkey registration failed: %s', e)
             logger.info('  Falling back to defaults: ctrl+shift+t / ctrl+shift+v')
-            self.config['hotkey'] = 'ctrl+shift+t'
-            self.config['voice_hotkey'] = 'ctrl+shift+v'
+            fallback_hotkey = 'ctrl+shift+t'
+            fallback_voice = 'ctrl+shift+v'
             try:
                 backend.stop_hotkeys()
                 backend.start_hotkeys(
                     [
-                        (self.config['hotkey'], self.on_translate_hotkey),
-                        (self.config['voice_hotkey'], self.on_voice_hotkey),
+                        (fallback_hotkey, self.on_translate_hotkey),
+                        (fallback_voice, self.on_voice_hotkey),
                     ]
                 )
                 if degraded_input_mode():

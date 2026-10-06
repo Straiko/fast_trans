@@ -243,9 +243,23 @@ class Translator:
         response.raise_for_status()
         data = response.json()
         if extract == 'openai':
-            return data['choices'][0]['message']['content'].strip()
+            choices = data.get('choices') or []
+            if not choices:
+                raise ValueError('API returned empty choices')
+            message = choices[0].get('message') if isinstance(choices[0], dict) else {}
+            content = message.get('content') if isinstance(message, dict) else None
+            if not content or not isinstance(content, str):
+                raise ValueError('API returned empty content')
+            return content.strip()
         if extract == 'anthropic':
-            return data['content'][0]['text'].strip()
+            content = data.get('content') or []
+            if not content:
+                raise ValueError('API returned empty content')
+            first_block = content[0] if isinstance(content[0], dict) else {}
+            text = first_block.get('text') if isinstance(first_block, dict) else None
+            if not text or not isinstance(text, str):
+                raise ValueError('API returned empty content')
+            return text.strip()
         raise ValueError(f'Unknown extract mode: {extract}')
 
     def _call_chat_api_with_retry(
@@ -285,7 +299,13 @@ class Translator:
         )
         response.raise_for_status()
         data = response.json()
-        return data['message']['content'].strip()
+        message = data.get('message')
+        if not message:
+            raise ValueError('Ollama returned no message')
+        content = message.get('content')
+        if not content:
+            raise ValueError('Ollama message has no content')
+        return content.strip()
 
     def _call_ollama_with_retry(self, prompt: str) -> str:
         last_exc: Exception = RuntimeError('No attempts made')

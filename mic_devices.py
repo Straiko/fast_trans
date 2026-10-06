@@ -42,16 +42,33 @@ def suppress_c_stderr():
 
     try:
         saved_stderr = os.dup(stderr_fd)
-        devnull = os.open(os.devnull, os.O_WRONLY)
-        os.dup2(devnull, stderr_fd)
-        os.close(devnull)
-        try:
-            yield
-        finally:
-            os.dup2(saved_stderr, stderr_fd)
-            os.close(saved_stderr)
     except Exception:
         yield
+        return
+
+    try:
+        devnull = os.open(os.devnull, os.O_WRONLY)
+    except Exception:
+        os.close(saved_stderr)
+        yield
+        return
+
+    try:
+        os.dup2(devnull, stderr_fd)
+    except Exception:
+        os.close(saved_stderr)
+        yield
+        return
+    finally:
+        os.close(devnull)
+
+    try:
+        yield
+    finally:
+        try:
+            os.dup2(saved_stderr, stderr_fd)
+        finally:
+            os.close(saved_stderr)
 
 
 _EXCLUDE_SUBSTRINGS: tuple[str, ...] = (

@@ -128,6 +128,17 @@ class TestProviderInfo:
         settings_window.on_provider_changed('anthropic')
         assert 'anthropic.com' in settings_window.provider_info.text()
 
+    def test_ollama_enables_ai_enhance_without_key(self, settings_window):
+        settings_window.api_key_input.setText('')
+        settings_window.on_provider_changed('ollama')
+        assert settings_window.ai_enhance_checkbox.isEnabled() is True
+
+    def test_switch_to_groq_without_key_disables_ai_enhance(self, settings_window):
+        settings_window.api_key_input.setText('')
+        settings_window.on_provider_changed('groq')
+        assert settings_window.ai_enhance_checkbox.isEnabled() is False
+        assert settings_window.ai_enhance_checkbox.isChecked() is False
+
 
 class TestConfigSnapshot:
     def test_snapshot_on_open(self, settings_window, default_config):

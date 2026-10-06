@@ -285,4 +285,27 @@ QScrollBar::handle:vertical {{
     border-radius: 3px;
     min-height: 28px;
 }}
+QScrollBar:horizontal {{
+    background: transparent;
+    height: 6px;
+    margin: 0;
+}}
+QScrollBar::handle:horizontal {{
+    background: {COLOR_BORDER_STRONG};
+    border-radius: 3px;
+    min-width: 28px;
+}}
+QScrollBar::add-line, QScrollBar::sub-line {{
+    width: 0;
+    height: 0;
+}}
+
+QToolTip {{
+    background: {COLOR_ELEVATED};
+    border: 1px solid {COLOR_BORDER};
+    border-radius: 6px;
+    color: {COLOR_SECONDARY};
+    font-size: {FS_CAPTION};
+    padding: 5px 8px;
+}}
 """

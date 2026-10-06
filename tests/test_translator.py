@@ -412,6 +412,36 @@ class TestCallChatApi:
         )
         assert result == 'bonjour'
 
+    @patch('translator.requests.post')
+    def test_openai_extract_null_content_raises(self, mock_post, translator):
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {'choices': [{'message': {'content': None}}]}
+        mock_resp.raise_for_status = MagicMock()
+        mock_post.return_value = mock_resp
+
+        with pytest.raises(ValueError, match='API returned empty content'):
+            translator._call_chat_api(
+                'https://api.openai.com/v1/chat/completions',
+                {'Authorization': 'Bearer test'},
+                {'model': 'gpt-4', 'messages': []},
+                extract='openai',
+            )
+
+    @patch('translator.requests.post')
+    def test_anthropic_extract_empty_content_raises(self, mock_post, translator):
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {'content': []}
+        mock_resp.raise_for_status = MagicMock()
+        mock_post.return_value = mock_resp
+
+        with pytest.raises(ValueError, match='API returned empty content'):
+            translator._call_chat_api(
+                'https://api.anthropic.com/v1/messages',
+                {'x-api-key': 'test'},
+                {'model': 'claude', 'messages': []},
+                extract='anthropic',
+            )
+
     def test_unknown_extract_raises(self, translator):
         with (
             pytest.raises(ValueError, match='Unknown extract mode'),

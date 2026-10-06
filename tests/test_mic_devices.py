@@ -1,6 +1,6 @@
-"""Unit tests for microphone curation (settings list + voice -1)."""
+import pytest
 
-from mic_devices import SYSTEM_DEFAULT_INDEX, build_mic_entries
+from mic_devices import SYSTEM_DEFAULT_INDEX, build_mic_entries, suppress_c_stderr
 
 
 def test_system_default_sentinel():
@@ -41,3 +41,8 @@ def test_order_system_before_physical():
     tiers = [e.tier for e in entries]
     assert tiers[0] == 'system'
     assert tiers[1] == 'physical'
+
+
+def test_suppress_c_stderr_propagates_exception():
+    with pytest.raises(ZeroDivisionError), suppress_c_stderr():
+        _ = 1 / 0

@@ -230,7 +230,10 @@ class TranslatorApp:
         self.show_settings()
 
     def on_tray_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
-        if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
+        if reason in (
+            QSystemTrayIcon.ActivationReason.DoubleClick,
+            QSystemTrayIcon.ActivationReason.Trigger,
+        ):
             self.show_settings()
 
     def show_settings(self) -> None:

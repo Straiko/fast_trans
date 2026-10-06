@@ -237,7 +237,8 @@ class SettingsWindow(QWidget):
         cancel.setMinimumWidth(100)
         btn_row.addWidget(cancel)
 
-        close_btn = QPushButton('Close')
+        close_btn = QPushButton('Save && Close')
+        close_btn.setToolTip('Save settings and close this window')
         close_btn.clicked.connect(self.save_settings)
         close_btn.setMinimumWidth(100)
         btn_row.addWidget(close_btn)
@@ -256,8 +257,11 @@ class SettingsWindow(QWidget):
         form.setHorizontalSpacing(14)
         form.setVerticalSpacing(12)
 
+        _hotkey_tip = 'Format: ctrl+shift+t  |  Modifiers: ctrl  shift  alt  win'
         self.hotkey_input = QLineEdit(self.config.get('hotkey', 'ctrl+shift+t'))
+        self.hotkey_input.setToolTip(_hotkey_tip)
         self.voice_hotkey_input = QLineEdit(self.config.get('voice_hotkey', 'ctrl+shift+v'))
+        self.voice_hotkey_input.setToolTip(_hotkey_tip)
 
         form.addRow('Translate selection', self.hotkey_input)
         form.addRow('Voice input', self.voice_hotkey_input)
@@ -323,7 +327,9 @@ class SettingsWindow(QWidget):
 
         self.ai_enhance_checkbox = QCheckBox('Improve text with AI before translating')
         self.ai_enhance_checkbox.setChecked(self.config.get('ai_enhance', True))
-        if not (self.config.get('api_key') or '').strip():
+        _has_key = bool((self.config.get('api_key') or '').strip())
+        _is_ollama = (self.config.get('api_provider') or 'groq') == 'ollama'
+        if not _has_key and not _is_ollama:
             self.ai_enhance_checkbox.setEnabled(False)
 
         l1.addWidget(self.auto_replace_checkbox)
@@ -492,9 +498,13 @@ class SettingsWindow(QWidget):
     def on_provider_changed(self, provider: str) -> None:
         self.provider_info.setText(_PROVIDER_HELP.get(provider, ''))
         is_ollama = provider == 'ollama'
+        has_key = bool(self.api_key_input.text().strip())
         self.api_key_input.setEnabled(not is_ollama)
         self._reveal_btn.setEnabled(not is_ollama)
-        self._test_btn.setEnabled(is_ollama or bool(self.api_key_input.text().strip()))
+        self._test_btn.setEnabled(is_ollama or has_key)
+        self.ai_enhance_checkbox.setEnabled(is_ollama or has_key)
+        if not has_key and not is_ollama:
+            self.ai_enhance_checkbox.setChecked(False)
 
     def _toggle_key_visibility(self, visible: bool) -> None:
         self.api_key_input.setEchoMode(
@@ -561,7 +571,7 @@ class SettingsWindow(QWidget):
 
         self.hotkey_input.editingFinished.connect(self._apply_now)
         self.voice_hotkey_input.editingFinished.connect(self._apply_now)
-        self.api_key_input.editingFinished.connect(self._on_api_key_edited)
+        self.api_key_input.textChanged.connect(self._on_api_key_edited)
         self.api_key_input.editingFinished.connect(self._apply_now)
 
     def _on_provider_combo_changed(self, text: str) -> None:
@@ -571,9 +581,10 @@ class SettingsWindow(QWidget):
 
     def _on_api_key_edited(self) -> None:
         has = bool(self.api_key_input.text().strip())
-        self.ai_enhance_checkbox.setEnabled(has)
-        self._test_btn.setEnabled(has)
-        if not has:
+        is_ollama = self.provider_combo.currentText() == 'ollama'
+        self.ai_enhance_checkbox.setEnabled(has or is_ollama)
+        self._test_btn.setEnabled(has or is_ollama)
+        if not has and not is_ollama:
             self.ai_enhance_checkbox.setChecked(False)
 
     # ------------------------------------------------------------------
