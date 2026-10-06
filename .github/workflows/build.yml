@@ -3,8 +3,20 @@ name: Build and Release Binaries
 on:
   push:
     branches: [ "master", "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'index.html'
+      - '.gitignore'
+      - 'LICENSE'
   pull_request:
     branches: [ "master", "main" ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'index.html'
+      - '.gitignore'
+      - 'LICENSE'
   workflow_dispatch:
 
 permissions:
@@ -123,10 +135,13 @@ jobs:
         name: Olympus-Linux
         path: release-files
 
-    - name: Set permissions and list files
+    - name: Generate Checksums and set permissions
       run: |
         chmod +x release-files/Olympus
-        ls -lh release-files
+        cd release-files
+        sha256sum Olympus.exe Olympus-Setup.exe Olympus > SHA256SUMS.txt
+        cat SHA256SUMS.txt
+        ls -lh
 
     - name: Update Release
       uses: softprops/action-gh-release@v2
@@ -137,4 +152,5 @@ jobs:
           release-files/Olympus.exe
           release-files/Olympus-Setup.exe
           release-files/Olympus
+          release-files/SHA256SUMS.txt
         token: ${{ secrets.GITHUB_TOKEN }}

@@ -33,9 +33,9 @@
 
 | Платформа | Файл | Описание | SHA-256 |
 |---|---|---|---|
-| **Windows** | [**`Olympus-Setup.exe`**](https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus-Setup.exe) (71.1 MB) | Полноценный установщик Windows (ярлык в меню «Пуск» и деинсталлятор) | `b9a0d06f7db51d4581cd6a4bdb13f196bb521bc945f8ef96fa05a07db8a35c52` |
-| **Windows** | [**`Olympus.exe`**](https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus.exe) (68.7 MB) | Портативная версия (работает без установки) | `057ba7e44432b12be060b3c8ae61d5aa1d9398b60759a77bedd2fa221d40e472` |
-| **Linux** | [**`Olympus`**](https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus) (93.5 MB) | Автономный исполняемый файл для Linux (`chmod +x Olympus && ./Olympus`) | `bb81fee2cc5e4f905fc09dad70f35e4abf3a689eebb20e69ec95e3b899194a01` |
+| **Windows** | [**`Olympus-Setup.exe`**](https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus-Setup.exe) (71.2 MB) | Полноценный установщик Windows (ярлык в меню «Пуск» и деинсталлятор) | `b8a4b5fe71ee7565600278c13edf9b241dbc82df3f7fdca063ba5d9aec5da0f8` |
+| **Windows** | [**`Olympus.exe`**](https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus.exe) (68.7 MB) | Портативная версия (работает без установки) | `175895e4b564099262717e41d4bbeb2bd363b5f6e07070f3a175b0351c337aa1` |
+| **Linux** | [**`Olympus`**](https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus) (99.8 MB) | Автономный исполняемый файл для Linux (`chmod +x Olympus && ./Olympus`) | `17a2354dc4ca5b2e223bec70d8c3983356ab85eced854aa0ad46be231e6b776d` |
 
 <details>
 <summary>Альтернатива: Скрипт автоустановки для Windows (<code>install_portable.bat</code>)</summary>
