@@ -27,25 +27,28 @@ A desktop app for instant text translation and voice input, with optional AI-pow
 
 ## Quick Start: Installation & Launching
 
-The application can be installed automatically in portable mode (no administrator rights needed) or manually in a virtual environment.
+The application can be run directly via pre-built binaries (recommended) or set up in a Python virtual environment.
 
-### 🚀 Method 1: Windows Auto-Installation (Portable, No Admin)
-The easiest way to run Olympus on Windows. It does not require installing Python on your system or having Git installed.
+### 🚀 Method 1: Pre-built Binaries (Recommended)
 
-1. Download the installer script [`install_portable.bat`](https://github.com/Straiko/fast_trans/releases/latest/download/install_portable.bat).
-2. Run it by double-clicking the file.
-3. The script will automatically:
-   - Create a workspace folder at `C:\Olympus`
-   - Download the official, clean **portable Python** distribution (leaves your system registry clean)
-   - Extract the project source code to `C:\Olympus\fast_trans`
-   - Install all required libraries using `pip`
-   - Automatically launch Olympus.
+Download the latest release binaries:
 
-**Subsequent launches:**
-To launch the application in the future, simply run the command below (or create a desktop shortcut to this file):
-```cmd
-C:\Olympus\python\python.exe C:\Olympus\fast_trans\main.py
-```
+| Platform | Package | Description | SHA-256 |
+|---|---|---|---|
+| **Windows** | [**`Olympus-Setup.exe`**](https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus-Setup.exe) (71.1 MB) | Full Windows Installer (Start Menu shortcut & uninstaller) | `b9a0d06f7db51d4581cd6a4bdb13f196bb521bc945f8ef96fa05a07db8a35c52` |
+| **Windows** | [**`Olympus.exe`**](https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus.exe) (68.7 MB) | Standalone Portable (no installation required) | `057ba7e44432b12be060b3c8ae61d5aa1d9398b60759a77bedd2fa221d40e472` |
+| **Linux** | [**`Olympus`**](https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus) (93.5 MB) | Standalone Linux Executable (`chmod +x Olympus && ./Olympus`) | `bb81fee2cc5e4f905fc09dad70f35e4abf3a689eebb20e69ec95e3b899194a01` |
+
+<details>
+<summary>Alternative: Windows Auto-Installer Script (<code>install_portable.bat</code>)</summary>
+
+1. Download [`install_portable.bat`](https://github.com/Straiko/fast_trans/releases/latest/download/install_portable.bat).
+2. Run it by double-clicking. It downloads a clean portable Python environment into `C:\Olympus` and installs dependencies automatically without administrator privileges.
+3. Subsequent launches:
+   ```cmd
+   C:\Olympus\python\python.exe C:\Olympus\fast_trans\main.py
+   ```
+</details>
 
 ---
 

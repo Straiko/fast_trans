@@ -25,25 +25,28 @@
 
 ## Быстрый старт: Установка и Запуск
 
-Приложение может быть установлено автоматически в портативном режиме (без прав администратора) или вручную.
+Приложение можно запустить с помощью готовых исполняемых файлов (рекомендуется) либо развернуть в виртуальном окружении Python.
 
-### 🚀 Способ 1: Windows Автоустановка (Портативная, без админки)
-Самый простой способ запустить Olympus на Windows. Не требует установки Python в систему или наличия Git.
+### 🚀 Способ 1: Готовые сборки (Рекомендуется)
 
-1. Скачайте файл автоустановщика [`install_portable.bat`](https://github.com/Straiko/fast_trans/releases/latest/download/install_portable.bat)
-2. Запустите его двойным щелчком мыши.
-3. Скрипт в фоновом режиме:
-   - Создаст рабочую папку `C:\Olympus`
-   - Скачает официальный чистый **портативный Python** (не загрязняет систему и реестр)
-   - Развернет исходный код приложения в `C:\Olympus\fast_trans`
-   - Установит все необходимые библиотеки через `pip`
-   - Автоматически запустит Olympus.
+Скачайте актуальные исполняемые файлы из релиза:
 
-**Как запускать приложение в дальнейшем:**
-Для последующих запусков просто выполните команду ниже (или создайте ярлык на этот файл):
-```cmd
-C:\Olympus\python\python.exe C:\Olympus\fast_trans\main.py
-```
+| Платформа | Файл | Описание | SHA-256 |
+|---|---|---|---|
+| **Windows** | [**`Olympus-Setup.exe`**](https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus-Setup.exe) (71.1 MB) | Полноценный установщик Windows (ярлык в меню «Пуск» и деинсталлятор) | `b9a0d06f7db51d4581cd6a4bdb13f196bb521bc945f8ef96fa05a07db8a35c52` |
+| **Windows** | [**`Olympus.exe`**](https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus.exe) (68.7 MB) | Портативная версия (работает без установки) | `057ba7e44432b12be060b3c8ae61d5aa1d9398b60759a77bedd2fa221d40e472` |
+| **Linux** | [**`Olympus`**](https://github.com/Straiko/fast_trans/releases/download/v1.0.0/Olympus) (93.5 MB) | Автономный исполняемый файл для Linux (`chmod +x Olympus && ./Olympus`) | `bb81fee2cc5e4f905fc09dad70f35e4abf3a689eebb20e69ec95e3b899194a01` |
+
+<details>
+<summary>Альтернатива: Скрипт автоустановки для Windows (<code>install_portable.bat</code>)</summary>
+
+1. Скачайте файл автоустановщика [`install_portable.bat`](https://github.com/Straiko/fast_trans/releases/latest/download/install_portable.bat).
+2. Запустите его двойным щелчком мыши. Скрипт автоматически скачает чистый портативный Python в `C:\Olympus` и установит зависимости без прав администратора.
+3. Последующие запуски:
+   ```cmd
+   C:\Olympus\python\python.exe C:\Olympus\fast_trans\main.py
+   ```
+</details>
 
 ---
 
