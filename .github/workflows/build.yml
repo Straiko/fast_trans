@@ -117,6 +117,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
     - name: Download Windows Portable
       uses: actions/download-artifact@v4
       with:
@@ -135,11 +138,12 @@ jobs:
         name: Olympus-Linux
         path: release-files
 
-    - name: Generate Checksums and set permissions
+    - name: Generate Checksums and prepare release files
       run: |
         chmod +x release-files/Olympus
+        cp install.bat install_portable.bat release-files/
         cd release-files
-        sha256sum Olympus.exe Olympus-Setup.exe Olympus > SHA256SUMS.txt
+        sha256sum Olympus.exe Olympus-Setup.exe Olympus install.bat install_portable.bat > SHA256SUMS.txt
         cat SHA256SUMS.txt
         ls -lh
 
@@ -152,5 +156,7 @@ jobs:
           release-files/Olympus.exe
           release-files/Olympus-Setup.exe
           release-files/Olympus
+          release-files/install.bat
+          release-files/install_portable.bat
           release-files/SHA256SUMS.txt
         token: ${{ secrets.GITHUB_TOKEN }}
