@@ -87,8 +87,13 @@ def is_valid_hotkey(spec: str) -> bool:
 
 def ensure_wayland_env() -> None:
     """Ensure XDG_RUNTIME_DIR, WAYLAND_DISPLAY, and NIRI_SOCKET are set when running in Wayland (including under sudo)."""
+    if platform.system() != 'Linux':
+        return
+
     if not os.environ.get('XDG_RUNTIME_DIR'):
-        uid = os.geteuid()
+        uid = 1000
+        if hasattr(os, 'geteuid'):
+            uid = os.geteuid()
         sudo_user = os.environ.get('SUDO_USER')
         if sudo_user:
             try:
@@ -96,7 +101,7 @@ def ensure_wayland_env() -> None:
 
                 uid = pwd.getpwnam(sudo_user).pw_uid
             except Exception:
-                uid = 1000
+                pass
         elif uid == 0:
             uid = 1000
         candidate = f'/run/user/{uid}'
@@ -117,6 +122,8 @@ def ensure_wayland_env() -> None:
 
 def is_wayland() -> bool:
     """True if running inside a Wayland desktop session."""
+    if platform.system() != 'Linux':
+        return False
     ensure_wayland_env()
     return bool(
         os.environ.get('WAYLAND_DISPLAY') or os.environ.get('XDG_SESSION_TYPE') == 'wayland'
@@ -125,7 +132,7 @@ def is_wayland() -> bool:
 
 def _send_wtype(combo: str) -> bool:
     """Send key combo via wtype (Wayland virtual keyboard). Returns True on success."""
-    if not shutil.which('wtype'):
+    if platform.system() != 'Linux' or not shutil.which('wtype'):
         return False
 
     ensure_wayland_env()
@@ -341,6 +348,9 @@ def get_clipboard_text(pyperclip_module: Any = None) -> str:
 
 def get_primary_selection_text() -> str:
     """Read X11/Wayland primary selection (text selected by mouse/cursor)."""
+    if platform.system() != 'Linux':
+        return ''
+
     if is_wayland() and shutil.which('wl-paste'):
         ensure_wayland_env()
         try:
@@ -392,16 +402,19 @@ def set_clipboard_and_primary(text: str, pyperclip_module: Any = None) -> None:
     except Exception as e:
         logger.warning('pyperclip copy failed: %s', e)
 
-    if is_wayland() and shutil.which('wl-copy'):
-        ensure_wayland_env()
-        with contextlib.suppress(Exception):
-            subprocess.run(['wl-copy', text], env=os.environ, timeout=1, check=False)
-        with contextlib.suppress(Exception):
-            subprocess.run(['wl-copy', '--primary', text], env=os.environ, timeout=1, check=False)
-    elif shutil.which('xclip'):
-        with contextlib.suppress(Exception):
-            p = subprocess.Popen(['xclip', '-selection', 'primary'], stdin=subprocess.PIPE)
-            p.communicate(input=text.encode('utf-8'), timeout=1)
+    if platform.system() == 'Linux':
+        if is_wayland() and shutil.which('wl-copy'):
+            ensure_wayland_env()
+            with contextlib.suppress(Exception):
+                subprocess.run(['wl-copy', text], env=os.environ, timeout=1, check=False)
+            with contextlib.suppress(Exception):
+                subprocess.run(
+                    ['wl-copy', '--primary', text], env=os.environ, timeout=1, check=False
+                )
+        elif shutil.which('xclip'):
+            with contextlib.suppress(Exception):
+                p = subprocess.Popen(['xclip', '-selection', 'primary'], stdin=subprocess.PIPE)
+                p.communicate(input=text.encode('utf-8'), timeout=1)
 
 
 def capture_selected_text(

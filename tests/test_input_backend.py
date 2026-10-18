@@ -98,6 +98,7 @@ class TestWtypeAndTerminal:
         from input_backend import _send_wtype
 
         with (
+            patch('platform.system', return_value='Linux'),
             patch('shutil.which', return_value='/usr/bin/wtype'),
             patch('subprocess.run') as mock_run,
         ):
