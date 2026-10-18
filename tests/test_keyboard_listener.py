@@ -31,6 +31,16 @@ def listener(default_config, translator):
     return KeyboardListener(default_config, translator)
 
 
+@pytest.fixture(autouse=True)
+def mock_gui_window():
+    """Default to GUI window and empty primary buffer for unit tests so desktop focus does not perturb results."""
+    with (
+        patch('input_backend.is_terminal_window', return_value=False),
+        patch('input_backend.get_primary_selection_text', return_value=''),
+    ):
+        yield
+
+
 class TestDoTranslateAutoReplace:
     @patch('keyboard_listener.get_backend')
     @patch('keyboard_listener.pyperclip')
@@ -49,6 +59,23 @@ class TestDoTranslateAutoReplace:
         assert 'Hello world' in copy_calls
         assert 'old clipboard' in copy_calls
         mock_backend.send.assert_any_call('ctrl+v')
+
+    @patch('keyboard_listener.get_backend')
+    @patch('keyboard_listener.pyperclip')
+    def test_auto_replace_terminal_success(self, mock_clip, mock_backend_cls, listener, translator):
+        mock_backend = MagicMock()
+        mock_backend_cls.return_value = mock_backend
+
+        with (
+            patch('input_backend.is_terminal_window', return_value=True),
+            patch(
+                'input_backend.get_primary_selection_text', return_value='terminal selected text'
+            ),
+            patch.object(translator, 'translate', return_value='translated terminal text'),
+        ):
+            listener._do_translate()
+
+        mock_backend.send.assert_called_once_with('ctrl+shift+v')
 
     @patch('keyboard_listener.get_backend')
     @patch('keyboard_listener.pyperclip')

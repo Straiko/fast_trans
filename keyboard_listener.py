@@ -2,13 +2,20 @@
 Hotkey listener: intercepts shortcuts and triggers translation / voice input.
 """
 
+import contextlib
 import logging
 import threading
 import time
 
 import pyperclip
 
-from input_backend import degraded_input_mode, get_backend
+from input_backend import (
+    capture_selected_text,
+    degraded_input_mode,
+    get_backend,
+    paste_text,
+    set_clipboard_and_primary,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -73,37 +80,22 @@ class KeyboardListener:
     def _do_translate(self) -> None:
         try:
             auto_replace = self.config.get('auto_replace', True)
+            backend = get_backend()
 
-            # Always capture selection via Ctrl+C — no manual copying needed.
-            logger.info('  Capturing selection (Ctrl+C) and translating…')
-            clipboard_before = pyperclip.paste()
-            get_backend().send('ctrl+c')
-            time.sleep(0.3)
-            selected_text = pyperclip.paste()
+            logger.info('  Capturing selection and translating…')
+            clipboard_before = None
+            with contextlib.suppress(Exception):
+                clipboard_before = pyperclip.paste()
+
+            selected_text = capture_selected_text(
+                pyperclip_module=pyperclip,
+                backend=backend,
+                clipboard_before=clipboard_before,
+            )
 
             if not selected_text or not selected_text.strip():
                 logger.warning('  No text found — select text and try again.')
                 return
-
-            # Retry once if clipboard didn't change (slow apps / Wayland lag).
-            if selected_text == clipboard_before:
-                time.sleep(0.2)
-                get_backend().send('ctrl+c')
-                time.sleep(0.2)
-                selected_text_retry = pyperclip.paste()
-                if selected_text_retry and selected_text_retry.strip():
-                    selected_text = selected_text_retry
-                if (
-                    selected_text == clipboard_before
-                    and clipboard_before
-                    and clipboard_before.strip()
-                ):
-                    logger.info('  Clipboard unchanged — using current clipboard as source.')
-                elif selected_text == clipboard_before:
-                    logger.warning(
-                        '  Clipboard unchanged — nothing selected? Select text and retry.'
-                    )
-                    return
 
             logger.info('  Source (%d chars): %.50s…', len(selected_text), selected_text)
 
@@ -116,20 +108,20 @@ class KeyboardListener:
             translated = self.translator.translate(selected_text)
             logger.info('  Result: %.50s…', translated)
 
-            pyperclip.copy(translated)
-
             if auto_replace:
-                time.sleep(0.15)
-                get_backend().send('ctrl+v')
+                paste_text(
+                    translated,
+                    pyperclip_module=pyperclip,
+                    backend=backend,
+                )
                 logger.info('  Selection replaced with translation.')
-                if clipboard_before is not None:
-                    try:
+                if self.config.get('restore_clipboard', True) and clipboard_before is not None:
+                    with contextlib.suppress(Exception):
                         time.sleep(0.4)
                         pyperclip.copy(clipboard_before)
-                    except Exception:
-                        pass
             else:
-                logger.info('  Translation copied to clipboard — press Ctrl+V to paste.')
+                set_clipboard_and_primary(translated, pyperclip_module=pyperclip)
+                logger.info('  Translation copied to clipboard — press paste to insert.')
 
             if self.translation_done is not None:
                 self.translation_done(translated, auto_replace)

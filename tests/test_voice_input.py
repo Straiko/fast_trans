@@ -174,12 +174,9 @@ class TestListenWithStopCheck:
 
 
 class TestRecordAudioSimple:
-    @patch('voice_input.send_key_combo')
-    @patch('voice_input.pyperclip')
+    @patch('voice_input.paste_text')
     @patch('voice_input.sr')
-    def test_recognize_with_source_lang(
-        self, mock_sr, mock_clip, mock_send, default_config, translator
-    ):
+    def test_recognize_with_source_lang(self, mock_sr, mock_paste, default_config, translator):
         import speech_recognition as sr
 
         mock_sr.WaitTimeoutError = sr.WaitTimeoutError
@@ -208,6 +205,7 @@ class TestRecordAudioSimple:
             call_kwargs[1].get('language') == 'de-DE'
             or call_kwargs.kwargs.get('language') == 'de-DE'
         )
+        mock_paste.assert_called_once()
 
     @patch('voice_input.sr')
     def test_stop_recording_returns_early(self, mock_sr, default_config, translator):
@@ -257,11 +255,10 @@ class TestRecordAudioSimple:
 
         assert vi.is_recording is False
 
-    @patch('voice_input.send_key_combo')
-    @patch('voice_input.pyperclip')
+    @patch('voice_input.paste_text')
     @patch('voice_input.sr')
     def test_system_default_uses_microphone_without_index(
-        self, mock_sr, mock_clip, mock_send, default_config, translator
+        self, mock_sr, mock_paste, default_config, translator
     ):
         import speech_recognition as sr
 
@@ -285,3 +282,4 @@ class TestRecordAudioSimple:
             vi._record_audio_simple()
 
         mock_sr.Microphone.assert_called_once_with()
+        mock_paste.assert_called_once()

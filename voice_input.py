@@ -7,13 +7,11 @@ Intentionally minimal UI — recording feedback is via tray / logs.
 
 import logging
 import threading
-import time
 
-import pyperclip
 import speech_recognition as sr
 from PyQt6.QtWidgets import QWidget
 
-from input_backend import send_key_combo
+from input_backend import paste_text
 from lang_registry import RECOGNITION_LANG_MAP
 from mic_devices import SYSTEM_DEFAULT_INDEX, suppress_c_stderr
 
@@ -97,9 +95,7 @@ class VoiceInput:
 
             translated = self.translator.translate(text)
             logger.info('Translated: %s', translated)
-            pyperclip.copy(translated)
-            time.sleep(0.08)
-            send_key_combo('ctrl+v')
+            paste_text(translated)
 
         except sr.WaitTimeoutError:
             logger.warning('Timeout — no speech detected')

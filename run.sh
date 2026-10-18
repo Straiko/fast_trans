@@ -33,6 +33,15 @@ if [ -n "$SUDO_USER" ]; then
             fi
         done
     fi
+    # Niri socket detection
+    if [ -z "$NIRI_SOCKET" ]; then
+        for sock in "/run/user/$REAL_UID"/niri.*.sock; do
+            if [ -S "$sock" ]; then
+                export NIRI_SOCKET="$sock"
+                break
+            fi
+        done
+    fi
 fi
 
 # Приоритет: venv → системный python
