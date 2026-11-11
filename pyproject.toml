@@ -9,7 +9,7 @@ description = "Desktop text & voice translator with AI enhancement"
 license = { text = "MIT" }
 requires-python = ">=3.10"
 dependencies = [
-    "PyQt6>=6.6.0,<7",
+    "PyQt6>=6.6.0,<6.12.0",
     "keyboard>=0.13.5",
     "six>=1.16.0",
     "pynput>=1.7.6",
@@ -75,6 +75,11 @@ warn_unused_ignores = true
 warn_return_any = false
 no_implicit_optional = true
 exclude = "(demo-output|build|dist)"
+
+[[tool.mypy.overrides]]
+module = "PyQt6.*"
+follow_imports = "skip"
+ignore_missing_imports = true
 
 # ---------------------------------------------------------------------------
 # Pytest

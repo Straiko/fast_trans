@@ -118,4 +118,4 @@ jobs:
           pip install -r requirements.txt mypy
 
       - name: Run mypy
-        run: mypy *.py tests/ --ignore-missing-imports
+        run: mypy --config-file pyproject.toml *.py tests/ --ignore-missing-imports
