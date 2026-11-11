@@ -74,7 +74,7 @@ ignore_missing_imports = true
 warn_unused_ignores = true
 warn_return_any = false
 no_implicit_optional = true
-exclude = ["demo-output"]
+exclude = "(demo-output|build|dist)"
 
 # ---------------------------------------------------------------------------
 # Pytest
