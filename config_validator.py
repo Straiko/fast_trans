@@ -9,7 +9,15 @@ from lang_registry import VALID_LANGUAGES
 
 logger = logging.getLogger(__name__)
 
-VALID_API_PROVIDERS = {'groq', 'openai', 'anthropic', 'huggingface', 'ollama'}
+VALID_API_PROVIDERS = {
+    'groq',
+    'openai',
+    'anthropic',
+    'huggingface',
+    'ollama',
+    'deepseek',
+    'gemini',
+}
 
 
 def validate_config(config: dict[str, Any]) -> dict[str, Any]:
@@ -54,7 +62,7 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
             logger.warning('Invalid microphone_index, defaulting to -1')
             validated['microphone_index'] = -1
 
-    for bool_key in ('auto_replace', 'ai_enhance'):
+    for bool_key in ('auto_replace', 'ai_enhance', 'prefer_llm_translation'):
         if bool_key in validated and not isinstance(validated[bool_key], bool):
             logger.warning("'%s' must be boolean, converting", bool_key)
             validated[bool_key] = bool(validated[bool_key])

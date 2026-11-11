@@ -48,6 +48,14 @@ _PROVIDER_HELP: dict[str, str] = {
     'groq': (
         'Groq — free tier. Get a key: https://console.groq.com\nModel: llama-3.3-70b-versatile'
     ),
+    'deepseek': (
+        'DeepSeek — ultra-fast & affordable. Get a key: https://platform.deepseek.com\n'
+        'Model: deepseek-chat'
+    ),
+    'gemini': (
+        'Google Gemini — fast AI with generous free tier. Get a key: https://aistudio.google.com\n'
+        'Model: gemini-2.0-flash'
+    ),
     'huggingface': (
         'Hugging Face — free inference token: https://huggingface.co/settings/tokens\n'
         'Model: Mixtral-8x7B (may be slow when busy)'
@@ -87,6 +95,28 @@ def _http_probe(provider: str, api_key: str) -> tuple[bool, str]:
                 headers={'Authorization': f'Bearer {key}', 'Content-Type': 'application/json'},
                 json={
                     'model': 'llama-3.3-70b-versatile',
+                    'messages': [{'role': 'user', 'content': 'ping'}],
+                    'max_tokens': 1,
+                },
+                timeout=12,
+            )
+        elif provider == 'deepseek':
+            r = requests.post(
+                'https://api.deepseek.com/chat/completions',
+                headers={'Authorization': f'Bearer {key}', 'Content-Type': 'application/json'},
+                json={
+                    'model': 'deepseek-chat',
+                    'messages': [{'role': 'user', 'content': 'ping'}],
+                    'max_tokens': 1,
+                },
+                timeout=12,
+            )
+        elif provider == 'gemini':
+            r = requests.post(
+                'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+                headers={'Authorization': f'Bearer {key}', 'Content-Type': 'application/json'},
+                json={
+                    'model': 'gemini-2.0-flash',
                     'messages': [{'role': 'user', 'content': 'ping'}],
                     'max_tokens': 1,
                 },
@@ -327,13 +357,21 @@ class SettingsWindow(QWidget):
 
         self.ai_enhance_checkbox = QCheckBox('Improve text with AI before translating')
         self.ai_enhance_checkbox.setChecked(self.config.get('ai_enhance', True))
+
+        self.prefer_llm_checkbox = QCheckBox(
+            'Translate with AI directly (higher quality & fluency)'
+        )
+        self.prefer_llm_checkbox.setChecked(self.config.get('prefer_llm_translation', False))
+
         _has_key = bool((self.config.get('api_key') or '').strip())
         _is_ollama = (self.config.get('api_provider') or 'groq') == 'ollama'
         if not _has_key and not _is_ollama:
             self.ai_enhance_checkbox.setEnabled(False)
+            self.prefer_llm_checkbox.setEnabled(False)
 
         l1.addWidget(self.auto_replace_checkbox)
         l1.addWidget(self.ai_enhance_checkbox)
+        l1.addWidget(self.prefer_llm_checkbox)
         l1.addStretch()
         self.pages.addWidget(p1)
 
@@ -387,7 +425,17 @@ class SettingsWindow(QWidget):
         aform.setVerticalSpacing(12)
 
         self.provider_combo = QComboBox()
-        self.provider_combo.addItems(['groq', 'huggingface', 'openai', 'anthropic', 'ollama'])
+        self.provider_combo.addItems(
+            [
+                'groq',
+                'deepseek',
+                'gemini',
+                'openai',
+                'anthropic',
+                'ollama',
+                'huggingface',
+            ]
+        )
         self.provider_combo.setCurrentText(self.config.get('api_provider', 'groq'))
 
         self.provider_info = QLabel()
@@ -503,8 +551,12 @@ class SettingsWindow(QWidget):
         self._reveal_btn.setEnabled(not is_ollama)
         self._test_btn.setEnabled(is_ollama or has_key)
         self.ai_enhance_checkbox.setEnabled(is_ollama or has_key)
+        if hasattr(self, 'prefer_llm_checkbox'):
+            self.prefer_llm_checkbox.setEnabled(is_ollama or has_key)
         if not has_key and not is_ollama:
             self.ai_enhance_checkbox.setChecked(False)
+            if hasattr(self, 'prefer_llm_checkbox'):
+                self.prefer_llm_checkbox.setChecked(False)
 
     def _toggle_key_visibility(self, visible: bool) -> None:
         self.api_key_input.setEchoMode(
@@ -535,6 +587,8 @@ class SettingsWindow(QWidget):
         self.config['voice_hotkey'] = self.voice_hotkey_input.text().strip()
         self.config['auto_replace'] = self.auto_replace_checkbox.isChecked()
         self.config['ai_enhance'] = self.ai_enhance_checkbox.isChecked()
+        if hasattr(self, 'prefer_llm_checkbox'):
+            self.config['prefer_llm_translation'] = self.prefer_llm_checkbox.isChecked()
         self.config['source_lang'] = self.source_lang_combo.currentText()
         self.config['target_lang'] = self.target_lang_combo.currentText()
         self.config['api_provider'] = self.provider_combo.currentText()
@@ -562,6 +616,7 @@ class SettingsWindow(QWidget):
     def _wire_auto_apply(self) -> None:
         self.auto_replace_checkbox.stateChanged.connect(lambda *_: self._schedule_apply())
         self.ai_enhance_checkbox.stateChanged.connect(lambda *_: self._schedule_apply())
+        self.prefer_llm_checkbox.stateChanged.connect(lambda *_: self._schedule_apply())
         self.mic_combo.currentIndexChanged.connect(lambda *_: self._schedule_apply())
         self.mic_filter.textChanged.connect(self._schedule_mic_filter)
         self.source_lang_combo.currentTextChanged.connect(lambda *_: self._schedule_apply())
@@ -583,9 +638,13 @@ class SettingsWindow(QWidget):
         has = bool(self.api_key_input.text().strip())
         is_ollama = self.provider_combo.currentText() == 'ollama'
         self.ai_enhance_checkbox.setEnabled(has or is_ollama)
+        if hasattr(self, 'prefer_llm_checkbox'):
+            self.prefer_llm_checkbox.setEnabled(has or is_ollama)
         self._test_btn.setEnabled(has or is_ollama)
         if not has and not is_ollama:
             self.ai_enhance_checkbox.setChecked(False)
+            if hasattr(self, 'prefer_llm_checkbox'):
+                self.prefer_llm_checkbox.setChecked(False)
 
     # ------------------------------------------------------------------
     def cancel_settings(self) -> None:

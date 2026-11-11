@@ -138,6 +138,12 @@ jobs:
         name: Olympus-Linux
         path: release-files
 
+    - name: Get version
+      id: get_version
+      run: |
+        VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])" 2>/dev/null || grep -m1 '^version =' pyproject.toml | cut -d'"' -f2)
+        echo "version=v$VERSION" >> $GITHUB_OUTPUT
+
     - name: Generate Checksums and prepare release files
       run: |
         chmod +x release-files/Olympus
@@ -150,8 +156,8 @@ jobs:
     - name: Update Release
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v1.0.0
-        name: Olympus v1.0.0
+        tag_name: ${{ steps.get_version.outputs.version }}
+        name: Olympus ${{ steps.get_version.outputs.version }}
         files: |
           release-files/Olympus.exe
           release-files/Olympus-Setup.exe

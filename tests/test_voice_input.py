@@ -283,3 +283,37 @@ class TestRecordAudioSimple:
 
         mock_sr.Microphone.assert_called_once_with()
         mock_paste.assert_called_once()
+
+
+class TestIsSilence:
+    def test_silence_detected_low_amplitude(self):
+        import speech_recognition as sr
+
+        # 16-bit PCM zeroes (total silence)
+        silent_data = b'\x00\x00' * 500
+        audio = sr.AudioData(silent_data, 16000, 2)
+        assert VoiceInput._is_silence(audio, threshold=200) is True
+
+    def test_non_silence_detected_high_amplitude(self):
+        import speech_recognition as sr
+
+        # 16-bit PCM loud sine/sawtooth-like signal
+        loud_data = (b'\x00\x10' + b'\x00\x20') * 500
+        audio = sr.AudioData(loud_data, 16000, 2)
+        assert VoiceInput._is_silence(audio, threshold=200) is False
+
+    def test_pure_python_fallback_without_audioop(self, monkeypatch):
+        import sys
+
+        import speech_recognition as sr
+
+        # Setting sys.modules[name] = None forces `import name` to raise ImportError
+        monkeypatch.setitem(sys.modules, 'audioop', None)
+
+        silent_data = b'\x00\x00' * 500
+        audio = sr.AudioData(silent_data, 16000, 2)
+        assert VoiceInput._is_silence(audio, threshold=200) is True
+
+        loud_data = (b'\x00\x10' + b'\x00\x20') * 500
+        audio_loud = sr.AudioData(loud_data, 16000, 2)
+        assert VoiceInput._is_silence(audio_loud, threshold=200) is False

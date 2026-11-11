@@ -121,6 +121,7 @@ class TranslatorApp:
             'voice_hotkey': 'ctrl+shift+v',
             'auto_replace': True,
             'ai_enhance': True,
+            'prefer_llm_translation': False,
             'source_lang': 'auto',
             'target_lang': 'en',
             'api_key': '',

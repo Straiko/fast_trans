@@ -33,6 +33,8 @@ _OPENAI_MODEL = 'gpt-4o'
 _ANTHROPIC_MODEL = 'claude-3-5-sonnet-20241022'
 _HUGGINGFACE_MODEL = 'mistralai/Mixtral-8x7B-Instruct-v0.1'
 _OLLAMA_MODEL = 'llama3'  # default; user can override via config key 'ollama_model'
+_DEEPSEEK_MODEL = 'deepseek-chat'
+_GEMINI_MODEL = 'gemini-2.0-flash'
 
 
 class Translator:
@@ -74,18 +76,33 @@ class Translator:
             return self._translation_cache[cache_key]
 
         result: str | None = None
+        prefer_llm = bool(self.config.get('prefer_llm_translation', False)) and self.llm_available()
 
-        # 1. Primary: Google Translator
-        try:
-            translator = self._get_google_translator(src, dest)
-            result = translator.translate(text)
-        except Exception as e:
-            logger.warning('Google translation failed (%s). Attempting fallback...', e)
-            # Invalidate cached instance on failure — it may have a stale session.
-            self._google_translator_cache.pop((src, dest), None)
+        # 1. Primary LLM translation if preferred and configured
+        if prefer_llm:
+            try:
+                logger.info(
+                    'Using primary LLM translation (%s)...',
+                    self.config.get('api_provider', 'llm'),
+                )
+                result = self.translate_with_llm(text, src, dest)
+            except Exception as llm_err:
+                logger.warning(
+                    'Primary LLM translation failed (%s). Falling back to Google...', llm_err
+                )
 
-        # 2. Fallback: Configured LLM (Groq, OpenAI, Anthropic, HuggingFace, Ollama)
-        if not result and self.llm_available():
+        # 2. Google Translator (default primary, or fallback if LLM failed)
+        if not result:
+            try:
+                translator = self._get_google_translator(src, dest)
+                result = translator.translate(text)
+            except Exception as e:
+                logger.warning('Google translation failed (%s). Attempting fallback...', e)
+                # Invalidate cached instance on failure — it may have a stale session.
+                self._google_translator_cache.pop((src, dest), None)
+
+        # 3. Fallback: Configured LLM (if not already attempted)
+        if not result and not prefer_llm and self.llm_available():
             try:
                 logger.info(
                     'Using LLM fallback (%s) for translation...',
@@ -95,7 +112,7 @@ class Translator:
             except Exception as llm_err:
                 logger.warning('LLM translation fallback failed: %s', llm_err)
 
-        # 3. Fallback: MyMemory free translation API
+        # 4. Fallback: MyMemory free translation API
         if not result:
             try:
                 logger.info('Using MyMemory fallback for translation...')
@@ -195,11 +212,12 @@ class Translator:
             raise ValueError('API key missing')
 
         if api_provider == 'openai':
+            model = (self.config.get('openai_model') or _OPENAI_MODEL).strip()
             return self._call_chat_api_with_retry(
                 'https://api.openai.com/v1/chat/completions',
                 {'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
                 {
-                    'model': _OPENAI_MODEL,
+                    'model': model,
                     'messages': [{'role': 'user', 'content': prompt}],
                     'temperature': 0.3,
                     'max_tokens': 500,
@@ -207,6 +225,7 @@ class Translator:
                 extract='openai',
             )
         if api_provider == 'anthropic':
+            model = (self.config.get('anthropic_model') or _ANTHROPIC_MODEL).strip()
             return self._call_chat_api_with_retry(
                 'https://api.anthropic.com/v1/messages',
                 {
@@ -215,18 +234,45 @@ class Translator:
                     'Content-Type': 'application/json',
                 },
                 {
-                    'model': _ANTHROPIC_MODEL,
+                    'model': model,
                     'max_tokens': 500,
                     'messages': [{'role': 'user', 'content': prompt}],
                 },
                 extract='anthropic',
             )
         if api_provider == 'groq':
+            model = (self.config.get('groq_model') or _GROQ_MODEL).strip()
             return self._call_chat_api_with_retry(
                 'https://api.groq.com/openai/v1/chat/completions',
                 {'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
                 {
-                    'model': _GROQ_MODEL,
+                    'model': model,
+                    'messages': [{'role': 'user', 'content': prompt}],
+                    'temperature': 0.3,
+                    'max_tokens': 500,
+                },
+                extract='openai',
+            )
+        if api_provider == 'deepseek':
+            model = (self.config.get('deepseek_model') or _DEEPSEEK_MODEL).strip()
+            return self._call_chat_api_with_retry(
+                'https://api.deepseek.com/chat/completions',
+                {'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+                {
+                    'model': model,
+                    'messages': [{'role': 'user', 'content': prompt}],
+                    'temperature': 0.3,
+                    'max_tokens': 500,
+                },
+                extract='openai',
+            )
+        if api_provider == 'gemini':
+            model = (self.config.get('gemini_model') or _GEMINI_MODEL).strip()
+            return self._call_chat_api_with_retry(
+                'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+                {'Authorization': f'Bearer {api_key}', 'Content-Type': 'application/json'},
+                {
+                    'model': model,
                     'messages': [{'role': 'user', 'content': prompt}],
                     'temperature': 0.3,
                     'max_tokens': 500,

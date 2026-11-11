@@ -148,10 +148,31 @@ class VoiceInput:
     @staticmethod
     def _is_silence(audio: sr.AudioData, threshold: int = 200) -> bool:
         """Return True if the chunk is below the amplitude threshold (silence)."""
-        import audioop
-
         try:
+            import audioop
+
             rms = audioop.rms(audio.frame_data, audio.sample_width)
             return rms < threshold
+        except ImportError:
+            # Fallback for Python 3.13+ when audioop is not installed
+            import math
+            import struct
+
+            data = audio.frame_data
+            width = audio.sample_width
+            if not data or width not in (1, 2, 4):
+                return False
+            count = len(data) // width
+            if count == 0:
+                return False
+            fmt_map = {1: f'{count}b', 2: f'<{count}h', 4: f'<{count}i'}
+            fmt = fmt_map[width]
+            try:
+                samples = struct.unpack(fmt, data[: count * width])
+                sum_sq = sum(s * s for s in samples)
+                rms = int(math.sqrt(sum_sq / count))
+                return rms < threshold
+            except Exception:
+                return False
         except Exception:
             return False

@@ -6,7 +6,7 @@ A desktop app for instant text translation and voice input, with optional AI-pow
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![PyQt6](https://img.shields.io/badge/GUI-PyQt6-green)
-![Tests](https://img.shields.io/badge/tests-105%20passed-success)
+![Tests](https://img.shields.io/badge/tests-159%20passed-success)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
 ---
@@ -145,10 +145,13 @@ The AI text enhancement and speech correction features require an API key. Free 
 
 | Provider | Cost | Model | Get a key |
 |----------|------|-------|-----------|
-| **Groq** | Free | Llama 3.3 | https://console.groq.com |
-| **HuggingFace** | Free | Mixtral | https://huggingface.co/settings/tokens |
-| OpenAI | Paid | GPT-4 | https://platform.openai.com/api-keys |
-| Anthropic | Paid | Claude | https://console.anthropic.com |
+| **Groq** | Free | Llama 3.3 70B | https://console.groq.com |
+| **DeepSeek** | Ultra low-cost | deepseek-chat | https://platform.deepseek.com |
+| **Gemini** | Free / Paid | gemini-2.0-flash | https://aistudio.google.com |
+| **Ollama** | Free / Local | llama3 (offline) | https://ollama.com |
+| **HuggingFace** | Free | Mixtral-8x7B | https://huggingface.co/settings/tokens |
+| **OpenAI** | Paid | GPT-4o | https://platform.openai.com/api-keys |
+| **Anthropic** | Paid | Claude 3.5 Sonnet | https://console.anthropic.com |
 
 > **Tip:** Groq is recommended — it's free and very fast.
 

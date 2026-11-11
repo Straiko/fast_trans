@@ -67,6 +67,11 @@ class TestSyncUiToConfig:
         settings_window._sync_ui_to_config()
         assert default_config['api_key'] == 'sk-test-key'
 
+    def test_sync_prefer_llm(self, settings_window, default_config):
+        settings_window.prefer_llm_checkbox.setChecked(True)
+        settings_window._sync_ui_to_config()
+        assert default_config['prefer_llm_translation'] is True
+
 
 class TestCancelSettings:
     def test_cancel_restores_snapshot(self, settings_window, default_config):
@@ -128,16 +133,55 @@ class TestProviderInfo:
         settings_window.on_provider_changed('anthropic')
         assert 'anthropic.com' in settings_window.provider_info.text()
 
+    def test_deepseek_info(self, settings_window):
+        settings_window.on_provider_changed('deepseek')
+        assert 'deepseek.com' in settings_window.provider_info.text()
+
+    def test_gemini_info(self, settings_window):
+        settings_window.on_provider_changed('gemini')
+        assert 'aistudio.google.com' in settings_window.provider_info.text()
+
     def test_ollama_enables_ai_enhance_without_key(self, settings_window):
         settings_window.api_key_input.setText('')
         settings_window.on_provider_changed('ollama')
         assert settings_window.ai_enhance_checkbox.isEnabled() is True
+        assert settings_window.prefer_llm_checkbox.isEnabled() is True
 
     def test_switch_to_groq_without_key_disables_ai_enhance(self, settings_window):
         settings_window.api_key_input.setText('')
         settings_window.on_provider_changed('groq')
         assert settings_window.ai_enhance_checkbox.isEnabled() is False
         assert settings_window.ai_enhance_checkbox.isChecked() is False
+        assert settings_window.prefer_llm_checkbox.isEnabled() is False
+        assert settings_window.prefer_llm_checkbox.isChecked() is False
+
+
+class TestHttpProbe:
+    @patch('settings_window.requests.post')
+    def test_probe_deepseek_ok(self, mock_post):
+        from settings_window import _http_probe
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_post.return_value = mock_resp
+
+        ok, msg = _http_probe('deepseek', 'sk-dsk-test')
+        assert ok is True
+        assert 'OK' in msg
+        assert 'api.deepseek.com' in mock_post.call_args[0][0]
+
+    @patch('settings_window.requests.post')
+    def test_probe_gemini_ok(self, mock_post):
+        from settings_window import _http_probe
+
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_post.return_value = mock_resp
+
+        ok, msg = _http_probe('gemini', 'gemini-key')
+        assert ok is True
+        assert 'OK' in msg
+        assert 'generativelanguage.googleapis.com' in mock_post.call_args[0][0]
 
 
 class TestConfigSnapshot:

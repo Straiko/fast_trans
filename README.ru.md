@@ -4,7 +4,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue)
 ![PyQt6](https://img.shields.io/badge/GUI-PyQt6-green)
-![Tests](https://img.shields.io/badge/tests-105%20passed-success)
+![Tests](https://img.shields.io/badge/tests-159%20passed-success)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
 ---
@@ -143,10 +143,13 @@ python main.py
 
 | Провайдер | Цена | Модель | Получить ключ |
 |-----------|------|--------|---------------|
-| **Groq** | Бесплатно | Llama 3.3 | https://console.groq.com |
-| **HuggingFace** | Бесплатно | Mixtral | https://huggingface.co/settings/tokens |
-| OpenAI | Платно | GPT-4 | https://platform.openai.com/api-keys |
-| Anthropic | Платно | Claude | https://console.anthropic.com |
+| **Groq** | Бесплатно | Llama 3.3 70B | https://console.groq.com |
+| **DeepSeek** | Сверхдешево | deepseek-chat | https://platform.deepseek.com |
+| **Gemini** | Бесплатно / Платно | gemini-2.0-flash | https://aistudio.google.com |
+| **Ollama** | Бесплатно / Локально | llama3 (офлайн) | https://ollama.com |
+| **HuggingFace** | Бесплатно | Mixtral-8x7B | https://huggingface.co/settings/tokens |
+| **OpenAI** | Платно | GPT-4o | https://platform.openai.com/api-keys |
+| **Anthropic** | Платно | Claude 3.5 Sonnet | https://console.anthropic.com |
 
 > **Совет:** Рекомендуем Groq — бесплатно и очень быстро.
 
@@ -189,7 +192,7 @@ pip install -r requirements.txt
 python -m pytest tests/ -v
 ```
 
-105 тестов: движок перевода, API-провайдеры, горячие клавиши, голосовой ввод, UI настроек, миграция конфига.
+159 тестов: движок перевода, API-провайдеры, горячие клавиши, голосовой ввод, UI настроек, миграция конфига.
 
 ## 📦 Сборка в один файл (.EXE) для Windows
 
@@ -235,7 +238,7 @@ fast_trans/
 ├── build_windows.ps1    # Сборка Windows
 ├── requirements.txt     # Зависимости
 ├── LICENSE              # MIT
-├── tests/               # 105 модульных тестов
+├── tests/               # 159 модульных тестов
 └── tools/               # Утилиты
 ```
 

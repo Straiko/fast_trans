@@ -137,6 +137,32 @@ class TestTranslate:
             assert result == 'MM result'
             mock_mm.assert_called_once()
 
+    def test_translate_prefer_llm_primary(self, translator):
+        """When prefer_llm_translation is True and key is configured, LLM runs first."""
+        translator.config['api_key'] = 'sk-fake'
+        translator.config['prefer_llm_translation'] = True
+        with (
+            patch.object(translator, 'translate_with_llm', return_value='LLM direct') as mock_llm,
+            patch('translator.DeepGoogleTranslator') as mock_google,
+        ):
+            result = translator.translate('Привет')
+            assert result == 'LLM direct'
+            mock_llm.assert_called_once()
+            mock_google.assert_not_called()
+
+    def test_translate_prefer_llm_fallback_to_google(self, translator):
+        """When prefer_llm is True but LLM fails, fall back to Google."""
+        translator.config['api_key'] = 'sk-fake'
+        translator.config['prefer_llm_translation'] = True
+        mock_inst = MagicMock()
+        mock_inst.translate.return_value = 'Google fallback'
+        with (
+            patch.object(translator, 'translate_with_llm', side_effect=Exception('LLM error')),
+            patch('translator.DeepGoogleTranslator', return_value=mock_inst),
+        ):
+            result = translator.translate('Привет')
+            assert result == 'Google fallback'
+
     def test_translate_all_fail_returns_original(self, translator):
         """All three providers fail — return original text."""
         translator.config['api_key'] = 'sk-fake'
@@ -517,3 +543,46 @@ class TestRunLlmPrompt:
 
         result = translator._run_llm_prompt('test prompt')
         assert result != 'test prompt'
+
+    @patch('translator.requests.post')
+    def test_deepseek_provider(self, mock_post, translator):
+        translator.config['api_provider'] = 'deepseek'
+        translator.config['api_key'] = 'dsk-abc'
+
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {'choices': [{'message': {'content': 'deepseek result'}}]}
+        mock_resp.raise_for_status = MagicMock()
+        mock_post.return_value = mock_resp
+
+        result = translator._run_llm_prompt('test prompt')
+        assert result == 'deepseek result'
+        assert 'api.deepseek.com' in mock_post.call_args[0][0]
+
+    @patch('translator.requests.post')
+    def test_gemini_provider(self, mock_post, translator):
+        translator.config['api_provider'] = 'gemini'
+        translator.config['api_key'] = 'gemini-key'
+
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {'choices': [{'message': {'content': 'gemini result'}}]}
+        mock_resp.raise_for_status = MagicMock()
+        mock_post.return_value = mock_resp
+
+        result = translator._run_llm_prompt('test prompt')
+        assert result == 'gemini result'
+        assert 'generativelanguage.googleapis.com' in mock_post.call_args[0][0]
+
+    @patch('translator.requests.post')
+    def test_custom_model_override(self, mock_post, translator):
+        translator.config['api_provider'] = 'openai'
+        translator.config['api_key'] = 'sk-abc'
+        translator.config['openai_model'] = 'gpt-4.5-preview'
+
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {'choices': [{'message': {'content': 'custom model result'}}]}
+        mock_resp.raise_for_status = MagicMock()
+        mock_post.return_value = mock_resp
+
+        result = translator._run_llm_prompt('test prompt')
+        assert result == 'custom model result'
+        assert mock_post.call_args[1]['json']['model'] == 'gpt-4.5-preview'
