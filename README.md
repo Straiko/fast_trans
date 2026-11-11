@@ -194,7 +194,7 @@ pip install -r requirements.txt
 python -m pytest tests/ -v
 ```
 
-105 tests covering: translation engine, API providers, keyboard listener, voice input, settings UI, config migration.
+159 tests covering: translation engine, API providers, keyboard listener, voice input, settings UI, config migration.
 
 ## 📦 Packaging to Standalone Executable (.EXE) for Windows
 
@@ -240,7 +240,7 @@ fast_trans/
 ├── build_windows.ps1    # Windows build script
 ├── requirements.txt    # Python dependencies
 ├── LICENSE              # MIT
-├── tests/               # 105 unit tests
+├── tests/               # 159 unit tests
 └── tools/               # Utility scripts
 ```
 
